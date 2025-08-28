@@ -3,8 +3,18 @@
 import React, { useState } from "react";
 import { Menu, X, Utensils } from "lucide-react";
 import Link from "next/link";
-// import { useRouter } from "next/router";
 import { usePathname } from "next/navigation";
+
+import { Playfair_Display, Montserrat } from "next/font/google";
+const playfairDisplay = Playfair_Display({
+  weight: "400",
+  subsets: ["latin"],
+});
+const montserrat = Montserrat({
+  weight: "600",
+  subsets: ["latin"],
+});
+
 const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathName = usePathname();
@@ -26,7 +36,11 @@ const Navigation: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="interactive flex items-center space-x-2">
             <Utensils className="w-8 h-8 text-amber-400" />
-            <span className="text-xl font-bold text-white">Bella Vista</span>
+            <span
+              className={`text-xl font-bold text-white ${playfairDisplay.className}`}
+            >
+              Bella Vista
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -40,7 +54,9 @@ const Navigation: React.FC = () => {
                     isActive(item.path)
                       ? "bg-amber-600 text-white"
                       : "text-gray-300 hover:bg-white/10 hover:text-white"
-                  }`}
+                  }
+                  ${montserrat.className}
+                  `}
                 >
                   {item.label}
                 </Link>

@@ -30,10 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Navigation />
         <AuthProvider>
           <CartProvider>
-            <Navigation />
-
             <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 cursor-none">
               {children}
               <footer className="bg-black/50 backdrop-blur-lg text-white py-8 px-4">
@@ -48,9 +47,9 @@ export default function RootLayout({
                 </div>
               </footer>
             </div>
-            <CustomCursor />
           </CartProvider>
         </AuthProvider>
+        <CustomCursor />
       </body>
     </html>
   );
