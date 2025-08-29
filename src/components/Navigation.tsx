@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Menu, X, Utensils } from "lucide-react";
+import { Menu, X, Utensils, ShoppingBagIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
 import { Playfair_Display, Montserrat } from "next/font/google";
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
+import { m } from "motion/react";
+
 const playfairDisplay = Playfair_Display({
   weight: "400",
   subsets: ["latin"],
@@ -18,6 +21,8 @@ const montserrat = Montserrat({
 const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathName = usePathname();
+  const { user, logout } = useAuth();
+  const { getTotalItems, setIsCartOpen } = useCart();
 
   const navItems = [
     { path: "/", label: "Home" },
@@ -64,6 +69,55 @@ const Navigation: React.FC = () => {
             </div>
           </div>
 
+          {/* Desktop User Actions */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* Cart Button */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="interactive relative p-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <ShoppingBagIcon className="w-6 h-6" />
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {getTotalItems()}
+                </span>
+              )}
+            </button>
+
+            {/* User Menu */}
+            {user ? (
+              <div className="relative group">
+                <button className="interactive flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
+                  <UserIcon className="w-6 h-6" />
+                  <span className="text-sm">{user.name}</span>
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-black/90 backdrop-blur-lg rounded-lg shadow-lg border border-white/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="py-2">
+                    <Link
+                      href="/reservation"
+                      className="interactive block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10"
+                    >
+                      My Reservations
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="interactive w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                href="/auth"
+                className="interactive bg-amber-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-500 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
+
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
@@ -93,11 +147,55 @@ const Navigation: React.FC = () => {
                   isActive(item.path)
                     ? "bg-amber-600 text-white"
                     : "text-gray-300 hover:bg-white/10 hover:text-white"
-                }`}
+                }
+                ${montserrat.className} `}
               >
                 {item.label}
               </Link>
             ))}
+
+            {/* Mobile User Actions */}
+            <div className="border-t border-white/20 pt-3 mt-3">
+              <button
+                onClick={() => {
+                  setIsCartOpen(true);
+                  setIsOpen(false);
+                }}
+                className="interactive flex items-center justify-between w-full px-3 py-2 text-gray-300 hover:text-white"
+              >
+                <span>Cart</span>
+                {getTotalItems() > 0 && (
+                  <span className="bg-amber-600 text-white text-xs px-2 py-1 rounded-full">
+                    {getTotalItems()}
+                  </span>
+                )}
+              </button>
+
+              {user ? (
+                <>
+                  <div className="px-3 py-2 text-gray-400 text-sm">
+                    Signed in as {user.name}
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsOpen(false);
+                    }}
+                    className="interactive block w-full text-left px-3 py-2 text-gray-300 hover:text-white"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/auth"
+                  onClick={() => setIsOpen(false)}
+                  className="interactive block px-3 py-2 text-amber-400 hover:text-amber-300"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}

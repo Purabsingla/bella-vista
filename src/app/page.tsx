@@ -356,8 +356,8 @@ const Home = () => {
           <SplitText
             text="Ready for an Unforgettable Experience?"
             className="text-4xl md:text-5xl font-bold text-white mb-6 text-center w-[59vw]"
-            delay={100}
-            duration={0.6}
+            delay={70}
+            duration={0.2}
             ease="power3.out"
             splitType="chars"
             from={{ opacity: 0, y: 40 }}

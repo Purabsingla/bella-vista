@@ -5,6 +5,7 @@ import CustomCursor from "@/components/CustomCursor";
 import Navigation from "@/components/Navigation";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import Cart from "@/components/Cart";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,10 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navigation />
-        <AuthProvider>
-          <CartProvider>
+        <CartProvider>
+          <AuthProvider>
+            <Navigation />
             <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 cursor-none">
+              <Cart />
               {children}
               <footer className="bg-black/50 backdrop-blur-lg text-white py-8 px-4">
                 <div className="max-w-6xl mx-auto text-center">
@@ -47,8 +49,8 @@ export default function RootLayout({
                 </div>
               </footer>
             </div>
-          </CartProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </CartProvider>
         <CustomCursor />
       </body>
     </html>
