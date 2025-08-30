@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -18,7 +18,24 @@ const Cart: React.FC = () => {
     isCartOpen,
     setIsCartOpen,
   } = useCart();
+
   const { user } = useAuth();
+
+  const [visible, setVisible] = useState(false);
+  // state for animation class
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    if (isCartOpen) {
+      setVisible(true); // mount
+      // wait for next tick so Tailwind classes apply properly
+      requestAnimationFrame(() => setAnimate(true));
+    } else {
+      setAnimate(false); // trigger slide-out
+      const timer = setTimeout(() => setVisible(false), 300); // unmount after anim
+      return () => clearTimeout(timer);
+    }
+  }, [isCartOpen]);
 
   const handleCheckout = () => {
     if (!user) {
@@ -28,23 +45,29 @@ const Cart: React.FC = () => {
     }
 
     // Simulate checkout process
-    alert("Order placed successfully! 🎉");
-    clearCart();
+    router.replace("/checkout");
     setIsCartOpen(false);
   };
 
-  if (!isCartOpen) return null;
+  if (!visible && !isCartOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden transition">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+          animate ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
         onClick={() => setIsCartOpen(false)}
       />
 
       {/* Cart Panel */}
-      <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white/10 backdrop-blur-lg border-l border-white/20 shadow-2xl">
+      <div
+        className={`absolute right-0 top-0 h-full w-full max-w-md bg-white/10 backdrop-blur-lg border-l border-white/20 shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          animate ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {" "}
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/20">

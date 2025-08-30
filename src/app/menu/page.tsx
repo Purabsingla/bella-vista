@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import SplitText from "@/components/SplitText";
+import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
-import { ChefHat, Clock, Star } from "lucide-react";
+import { ChefHat, Star, Utensils, Cake, ShoppingCartIcon } from "lucide-react";
+import Carousel, { CarouselItem } from "@/components/Carousels";
+import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Aurora from "@/components/Aurora";
-import Carousel from "@/components/Carousels";
+
 const menuCategories = {
   starters: [
     {
@@ -110,68 +113,180 @@ const menuCategories = {
   ],
 };
 
-const dailySpecials = [
+const dailySpecials: CarouselItem[] = [
   {
     id: 1,
     name: "Truffle Risotto",
     description:
       "Creamy Arborio rice with black truffle, parmesan, and wild mushrooms",
+    title: "Truffle Risotto",
     price: "$28",
     image:
       "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=500&h=300&fit=crop",
     time: "25 min",
     rating: 4.9,
+    icon: <ChefHat className="w-4 h-4 text-white" />,
   },
   {
     id: 2,
     name: "Seafood Paella",
     description:
       "Traditional Spanish paella with fresh seafood and saffron rice",
+    title: "Seafood Paella",
     price: "$42",
     image:
       "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=500&h=300&fit=crop",
     time: "35 min",
     rating: 4.8,
+    icon: <Utensils className="w-4 h-4 text-white" />,
   },
   {
     id: 3,
     name: "Lamb Osso Buco",
     description: "Braised lamb shank with root vegetables and red wine jus",
+    title: "Lamb Osso Buco",
     price: "$45",
     image:
       "https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=500&h=300&fit=crop",
     time: "40 min",
     rating: 5.0,
+    icon: <Star className="w-4 h-4 text-white" />,
+  },
+  {
+    id: 4,
+    name: "Duck Confit",
+    description:
+      "Slow-cooked duck leg with cherry gastrique and wild rice pilaf",
+    title: "Duck Confit",
+    price: "$38",
+    image:
+      "https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=500&h=300&fit=crop",
+    time: "30 min",
+    rating: 4.7,
+    icon: <ChefHat className="w-4 h-4 text-white" />,
+  },
+  {
+    id: 5,
+    name: "Chocolate Soufflé",
+    description: "Decadent dark chocolate soufflé with vanilla bean ice cream",
+    title: "Chocolate Soufflé",
+    price: "$16",
+    image:
+      "https://images.pexels.com/photos/1126359/pexels-photo-1126359.jpeg?auto=compress&cs=tinysrgb&w=500&h=300&fit=crop",
+    time: "20 min",
+    rating: 4.9,
+    icon: <Cake className="w-4 h-4 text-white" />,
   },
 ];
 
+interface Item {
+  name: string;
+  description: string;
+  price: string;
+  image: string;
+}
+
 const Menu: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState("starters");
-  const [currentSpecialIndex, setCurrentSpecialIndex] = useState(0);
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useRouter();
 
-  const nextSpecial = () => {
-    setCurrentSpecialIndex((prev) => (prev + 1) % dailySpecials.length);
+  const handleAddToCart = (item: CarouselItem) => {
+    if (!user) {
+      navigate.replace("/auth?from=/menu");
+    }
+
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      description: item.description,
+    });
   };
 
-  const prevSpecial = () => {
-    setCurrentSpecialIndex(
-      (prev) => (prev - 1 + dailySpecials.length) % dailySpecials.length
-    );
+  const handleMenuItemAddToCart = (item: Item, category: string) => {
+    if (!user) {
+      navigate.replace("/auth?from=/menu");
+      return;
+    }
+
+    addToCart({
+      id: Date.now() + Math.random(), // Generate unique ID
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      description: item.description,
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-amber-400/20 to-orange-400/20 rounded-full mix-blend-multiply filter blur-xl animate-blob" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000" />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000" />
       </div>
+
+      {/* Floating Food Icons */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute top-20 left-10 text-4xl opacity-10 animate-bounce"
+          style={{ animationDelay: "0s" }}
+        >
+          🍝
+        </div>
+        <div
+          className="absolute top-40 right-20 text-3xl opacity-10 animate-bounce"
+          style={{ animationDelay: "1s" }}
+        >
+          🍷
+        </div>
+        <div
+          className="absolute bottom-40 left-20 text-5xl opacity-10 animate-bounce"
+          style={{ animationDelay: "2s" }}
+        >
+          🥘
+        </div>
+        <div
+          className="absolute bottom-20 right-10 text-4xl opacity-10 animate-bounce"
+          style={{ animationDelay: "3s" }}
+        >
+          🧀
+        </div>
+        <div
+          className="absolute top-1/2 left-5 text-3xl opacity-10 animate-bounce"
+          style={{ animationDelay: "4s" }}
+        >
+          🍾
+        </div>
+        <div
+          className="absolute top-1/3 right-5 text-4xl opacity-10 animate-bounce"
+          style={{ animationDelay: "5s" }}
+        >
+          🥩
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section className="py-20 px-4 text-center">
-        <SplitText className="text-5xl md:text-6xl font-bold text-white mb-4">
+        {/* <SplitText className="text-5xl md:text-6xl font-bold text-white mb-4">
           Our Menu
-        </SplitText>
+        </SplitText> */}
+        <SplitText
+          text="Our Menu"
+          className="text-5xl md:text-6xl font-bold text-white mb-4"
+          delay={70}
+          duration={0.2}
+          ease="power3.out"
+          splitType="chars"
+          from={{ opacity: 0, y: 40 }}
+          to={{ opacity: 1, y: 0 }}
+          threshold={0}
+          rootMargin="0px 0px -20% 0px"
+        />
         <FadeContent delay={500}>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Discover our carefully crafted dishes made with the finest
@@ -180,117 +295,48 @@ const Menu: React.FC = () => {
         </FadeContent>
       </section>
 
-      <div style={{ height: "600px", position: "relative" }}>
-        <Carousel
-          baseWidth={300}
-          autoplay={true}
-          autoplayDelay={3000}
-          pauseOnHover={true}
-          loop={true}
-          round={false}
-        />
-      </div>
-
       {/* Daily Specials Carousel */}
-      <section className="py-20 px-4 bg-black/30 backdrop-blur-lg">
+      <section className="py-20 px-4 bg-black/30 backdrop-blur-lg relative">
+        {/* Section Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
+        </div>
+
         <div className="max-w-6xl mx-auto">
-          <SplitText className="text-4xl md:text-5xl font-bold text-white mb-12 text-center">
+          {/* <SplitText className="text-4xl md:text-5xl font-bold text-white mb-12 text-center">
             Today&apos;s Specials
-          </SplitText>
+          </SplitText> */}
+          <SplitText
+            text="Today's Specials"
+            className="text-4xl md:text-5xl font-bold text-white mb-12 text-center"
+            delay={70}
+            duration={0.2}
+            ease="power3.out"
+            splitType="chars"
+            from={{ opacity: 0, y: 40 }}
+            to={{ opacity: 1, y: 0 }}
+            threshold={0}
+            rootMargin="0px 0px -20% 0px"
+          />
 
-          <div className="relative overflow-hidden">
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${currentSpecialIndex * 100}%)`,
-              }}
-            >
-              {dailySpecials.map((special) => (
-                <div key={special.id} className="w-full flex-shrink-0 px-4">
-                  <FadeContent>
-                    <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-                      <div className="grid md:grid-cols-2 gap-8 items-center">
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-2">
-                            <ChefHat className="w-6 h-6 text-amber-400" />
-                            <span className="text-amber-400 font-semibold">
-                              Chef&apos;s Special
-                            </span>
-                          </div>
-                          <h3 className="text-3xl font-bold text-white">
-                            {special.name}
-                          </h3>
-                          <p className="text-gray-300 text-lg leading-relaxed">
-                            {special.description}
-                          </p>
-
-                          <div className="flex items-center gap-6">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-5 h-5 text-amber-400" />
-                              <span className="text-gray-300">
-                                {special.time}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Star className="w-5 h-5 text-amber-400 fill-current" />
-                              <span className="text-gray-300">
-                                {special.rating}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <span className="text-4xl font-bold text-amber-400">
-                              {special.price}
-                            </span>
-                            <button className="interactive bg-amber-600 text-white px-6 py-3 rounded-full hover:bg-amber-500 transition-colors duration-300 font-semibold">
-                              Order Now
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="relative">
-                          <Image
-                            src={special.image}
-                            alt={special.name}
-                            width={500} // required in Next.js
-                            height={256}
-                            className="w-full h-64 object-cover rounded-xl shadow-lg"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl" />
-                        </div>
-                      </div>
-                    </div>
-                  </FadeContent>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={prevSpecial}
-              className="interactive absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-lg text-white p-3 rounded-full hover:bg-white/20 transition-colors duration-300"
-            >
-              ←
-            </button>
-            <button
-              onClick={nextSpecial}
-              className="interactive absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-lg text-white p-3 rounded-full hover:bg-white/20 transition-colors duration-300"
-            >
-              →
-            </button>
-          </div>
-
-          <div className="flex justify-center mt-8 space-x-2">
-            {dailySpecials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSpecialIndex(index)}
-                className={`interactive w-3 h-3 rounded-full transition-colors duration-300 ${
-                  index === currentSpecialIndex ? "bg-amber-400" : "bg-gray-600"
-                }`}
+          <FadeContent>
+            <div className="flex justify-center overflow-hidden">
+              <Carousel
+                items={dailySpecials}
+                baseWidth={800}
+                autoplay={true}
+                autoplayDelay={4000}
+                pauseOnHover={true}
+                loop={true}
+                onAddToCart={handleAddToCart}
               />
-            ))}
-          </div>
+            </div>
+          </FadeContent>
         </div>
       </section>
 
@@ -320,13 +366,14 @@ const Menu: React.FC = () => {
               (item, index) => (
                 <FadeContent key={item.name} delay={index * 100}>
                   <div className="bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={500} // required in Next.js
-                      height={256}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="relative w-full h-48">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-3">
                         <h3 className="text-xl font-bold text-white">
@@ -337,8 +384,14 @@ const Menu: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-gray-300 mb-4">{item.description}</p>
-                      <button className="interactive w-full bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-500 transition-colors duration-300 font-semibold">
-                        Add to Order
+                      <button
+                        onClick={() =>
+                          handleMenuItemAddToCart(item, activeCategory)
+                        }
+                        className="interactive w-full bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-500 transition-colors duration-300 font-semibold flex items-center justify-center gap-2"
+                      >
+                        <ShoppingCartIcon className="w-4 h-4" />
+                        {user ? "Add to Cart" : "Login to Order"}
                       </button>
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
@@ -28,9 +28,9 @@ const Auth: React.FC = () => {
 
   const { login, signup, isLoading } = useAuth();
   const navigate = useRouter();
-  const location = usePathname();
+  const searchParams = useSearchParams();
 
-  const from = location || "/";
+  const from = searchParams.get("from") || "/";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -92,6 +92,8 @@ const Auth: React.FC = () => {
       }
 
       if (success) {
+        alert("Authentication successful!");
+        alert(`${from} is what where we going`);
         navigate.replace(from);
       }
     } catch (error) {

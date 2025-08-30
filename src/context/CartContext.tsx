@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import Toast from "../components/Toast";
 
 export interface CartItem {
   id: number;
@@ -21,6 +22,7 @@ interface CartContextType {
   getTotalPrice: () => number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  showToast: (message: string, type: "success" | "error" | "info") => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -38,6 +40,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+    isVisible: boolean;
+  }>({
+    message: "",
+    type: "success",
+    isVisible: false,
+  });
 
   useEffect(() => {
     // Load cart from localStorage on app start
@@ -53,6 +64,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [cartItems]);
 
   const addToCart = (item: Omit<CartItem, "quantity">) => {
+    let isNewItem = false;
     setCartItems((prevItems) => {
       const existingItem = prevItems.find(
         (cartItem) => cartItem.id === item.id
@@ -65,9 +77,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
             : cartItem
         );
       } else {
+        isNewItem = true;
         return [...prevItems, { ...item, quantity: 1 }];
       }
     });
+
+    // Show toast notification
+    showToast(
+      isNewItem
+        ? `${item.name} added to cart! 🎉`
+        : `${item.name} quantity updated! ✨`,
+      "success"
+    );
   };
 
   const removeFromCart = (id: number) => {
@@ -100,6 +121,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }, 0);
   };
 
+  const showToast = (message: string, type: "success" | "error" | "info") => {
+    setToast({ message, type, isVisible: true });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, isVisible: false }));
+    }, 3000);
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  };
   return (
     <CartContext.Provider
       value={{
@@ -112,9 +143,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         getTotalPrice,
         isCartOpen,
         setIsCartOpen,
+        showToast,
       }}
     >
       {children}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={closeToast}
+      />
     </CartContext.Provider>
   );
 };
