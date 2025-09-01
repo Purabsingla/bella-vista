@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
 import { Award, Heart, Star, Calendar } from "lucide-react";
@@ -311,42 +311,6 @@ const About: React.FC = () => {
             threshold={0}
             rootMargin="0px 0px -20px 0px" // trigger ~50px before fully entering
           />
-
-          {/* <div className="relative">
-            <div className="relative w-full h-96 overflow-hidden rounded-2xl">
-              <Image
-                src={galleryImages[currentImageIndex]}
-                alt="Restaurant interior"
-                fill
-                className="w-full h-96 object-cover transition-all duration-500"
-              />
-            </div>
-
-            <button
-              onClick={prevImage}
-              className="interactive absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 backdrop-blur-lg text-white p-3 rounded-full hover:bg-black/70 transition-colors duration-300"
-            >
-              ←
-            </button>
-            <button
-              onClick={nextImage}
-              className="interactive absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 backdrop-blur-lg text-white p-3 rounded-full hover:bg-black/70 transition-colors duration-300"
-            >
-              →
-            </button>
-
-            <div className="flex justify-center mt-6 space-x-2">
-              {galleryImages.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`interactive w-3 h-3 rounded-full transition-colors duration-300 ${
-                    index === currentImageIndex ? "bg-amber-400" : "bg-gray-600"
-                  }`}
-                />
-              ))}
-            </div>
-          </div> */}
 
           <div className="flex items-center gap-2 h-[400px] w-full max-w-4xl mt-10 mx-auto">
             {galleryImages.map((images, index) => (
