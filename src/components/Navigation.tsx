@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { Playfair_Display, Montserrat } from "next/font/google";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import { m } from "motion/react";
 
 const playfairDisplay = Playfair_Display({
   weight: "400",
@@ -89,7 +88,7 @@ const Navigation: React.FC = () => {
               <div className="relative group">
                 <button className="interactive flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
                   <UserIcon className="w-6 h-6" />
-                  <span className="text-sm">{user.name}</span>
+                  <span className="text-sm">{user.displayName}</span>
                 </button>
                 <div className="absolute right-0 mt-2 w-48 bg-black/90 backdrop-blur-lg rounded-lg shadow-lg border border-white/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                   <div className="py-2">
@@ -174,7 +173,7 @@ const Navigation: React.FC = () => {
               {user ? (
                 <>
                   <div className="px-3 py-2 text-gray-400 text-sm">
-                    Signed in as {user.name}
+                    Signed in as {user.displayName}
                   </div>
                   <button
                     onClick={() => {

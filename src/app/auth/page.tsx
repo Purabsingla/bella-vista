@@ -33,14 +33,18 @@ const Auth: React.FC = () => {
 
   const from = searchParams.get("from") || "/";
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
+  const handleChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      console.log("Input changed:", e.target.value);
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      // Clear error when user starts typing
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    },
+    [errors]
+  );
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -79,36 +83,65 @@ const Auth: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      const success = false;
-
       if (!isLogin) {
         // SignUp using Firebase
-        await signUp(formData.email, formData.password);
+        await signUp(formData.name, formData.email, formData.password);
         showToast("Account created successfully!", "success");
+        setIsLogin(true);
       } else {
-        await signIn(formData.email, formData.password, rememberMe);
-        showToast("Login successful!", "success");
-      }
+        // SignIn Using Firebase
+        const userCredentials = await signIn(
+          formData.email,
+          formData.password,
+          rememberMe
+        );
 
-      if (success) {
-        alert("Authentication successful!");
-        alert(`${from} is what where we going`);
-        navigate.replace(from);
+        // Checking Success or not
+        if (userCredentials) {
+          showToast("Login successful!", "success");
+          navigate.replace(from);
+        }
       }
     } catch (error) {
       console.error("Authentication error:", error);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
-      {/* Stunning Background Animation */}
+  const memorizedSplitText = React.useMemo(
+    () => (
+      <SplitText
+        key={isLogin ? "login" : "signup"}
+        text={isLogin ? "Welcome Back!" : "Join Bella Vista"}
+        className="text-3xl font-bold text-white mb-2"
+        delay={100}
+        duration={0.6}
+        ease="power3.out"
+        splitType="chars"
+        from={{ opacity: 0, y: 40 }}
+        to={{ opacity: 1, y: 0 }}
+        threshold={0}
+        rootMargin="0px 0px -20% 0px"
+      />
+    ),
+    [isLogin]
+  );
+
+  const memorizedBackgroundAnimation = React.useMemo(
+    () => (
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-violet-900/30 via-purple-900/30 to-fuchsia-900/30" />
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-violet-400/30 to-purple-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-fuchsia-400/30 to-pink-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-2000" />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-400/30 to-violet-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-4000" />
       </div>
+    ),
+    []
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
+      {/* Stunning Background Animation */}
+      {memorizedBackgroundAnimation}
 
       <div className="min-h-screen flex items-center justify-center px-4 py-12">
         <div className="max-w-md w-full">
@@ -116,18 +149,7 @@ const Auth: React.FC = () => {
             <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8">
               {/* Header */}
               <div className="text-center mb-8">
-                <SplitText
-                  text={isLogin ? "Welcome Back!" : "Join Bella Vista"}
-                  className="text-3xl font-bold text-white mb-2"
-                  delay={100}
-                  duration={0.6}
-                  ease="power3.out"
-                  splitType="chars"
-                  from={{ opacity: 0, y: 40 }}
-                  to={{ opacity: 1, y: 0 }}
-                  threshold={0}
-                  rootMargin="0px 0px -20% 0px"
-                />
+                {memorizedSplitText}
 
                 <p className="text-gray-300">
                   {isLogin

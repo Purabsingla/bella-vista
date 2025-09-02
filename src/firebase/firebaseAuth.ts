@@ -9,6 +9,7 @@ import {
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
+  updateProfile,
 } from "firebase/auth";
 
 // Expiry time
@@ -21,10 +22,17 @@ export const refreshLoginTime = () => {
 
 // Sign up new user
 export const signUp = async (
+  name: string,
   email: string,
   password: string
 ): Promise<UserCredential> => {
-  return await createUserWithEmailAndPassword(auth, email, password);
+  const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  await updateProfile(userCredential.user, { displayName: name });
+  return userCredential;
 };
 
 // Sign in existing user with Remember Me + Expiry
