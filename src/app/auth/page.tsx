@@ -13,6 +13,7 @@ import {
   PhoneIcon,
   UserLock,
 } from "lucide-react";
+import { signIn, signUp } from "@/firebase/firebaseAuth";
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,7 +27,7 @@ const Auth: React.FC = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { login, signup, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const navigate = useRouter();
   const searchParams = useSearchParams();
 
@@ -78,17 +79,13 @@ const Auth: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      let success = false;
+      const success = false;
 
-      if (isLogin) {
-        success = await login(formData.email, formData.password);
+      if (!isLogin) {
+        // SignUp using Firebase
+        await signUp(formData.email, formData.password);
       } else {
-        success = await signup(
-          formData.name,
-          formData.email,
-          formData.password,
-          formData.phone
-        );
+        await signIn(formData.email, formData.password, true);
       }
 
       if (success) {

@@ -1,23 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-}
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from "@/firebase/firebase";
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (
-    name: string,
-    email: string,
-    password: string,
-    phone?: string
-  ) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -44,61 +32,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
+  // const login = async (email: string, password: string): Promise<boolean> => {
+  //   setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+  //   // Simulate API call
+  //   await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // Mock authentication - in real app, this would be an API call
-    const mockUser: User = {
-      id: "1",
-      name: "John Doe",
-      email: email,
-      phone: "+1 (555) 123-4567",
-    };
+  //   // Mock authentication - in real app, this would be an API call
+  //   // const mockUser: AuthUser = {
+  //   //   id: "1",
+  //   //   name: "John Doe",
+  //   //   email: email,
+  //   //   phone: "+1 (555) 123-4567",
+  //   // };
 
-    setUser(mockUser);
-    localStorage.setItem("bellavista_user", JSON.stringify(mockUser));
-    setIsLoading(false);
-    return true;
-  };
+  //   // setUser(mockUser);
+  //   // localStorage.setItem("bellavista_user", JSON.stringify(mockUser));
+  //   setIsLoading(false);
+  //   return true;
+  // };
 
-  const signup = async (
-    name: string,
-    email: string,
-    password: string,
-    phone?: string
-  ): Promise<boolean> => {
-    setIsLoading(true);
+  // const signup = async (
+  //   name: string,
+  //   email: string,
+  //   password: string,
+  //   phone?: string
+  // ): Promise<boolean> => {
+  //   setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+  //   // Simulate API call
+  //   await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Mock user creation
-    const newUser: User = {
-      id: Date.now().toString(),
-      name,
-      email,
-      phone,
-    };
+  //   // Mock user creation
+  //   const newUser: AuthUser = {
+  //     id: Date.now().toString(),
+  //     name,
+  //     email,
+  //     phone,
+  //   };
 
-    setUser(newUser);
-    localStorage.setItem("bellavista_user", JSON.stringify(newUser));
-    setIsLoading(false);
-    return true;
-  };
+  //   setUser(newUser);
+  //   localStorage.setItem("bellavista_user", JSON.stringify(newUser));
+  //   setIsLoading(false);
+  //   return true;
+  // };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("bellavista_user");
+    // setUser(null);
     localStorage.removeItem("bellavista_cart");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
