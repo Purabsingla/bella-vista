@@ -3,11 +3,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/firebase/firebase";
+import Toast from "@/components/Toast";
 
 interface AuthContextType {
   user: User | null;
   logout: () => void;
   isLoading: boolean;
+  showToast: (message: string, type: "success" | "error" | "info") => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +27,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+    isVisible: boolean;
+  }>({
+    message: "",
+    type: "success",
+    isVisible: false,
+  });
 
   useEffect(() => {
     // Check if user is logged in on app start
@@ -39,50 +50,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => unsubscribe();
   }, []);
 
-  // const login = async (email: string, password: string): Promise<boolean> => {
-  //   setIsLoading(true);
+  const showToast = (message: string, type: "success" | "error" | "info") => {
+    setToast({ message, type, isVisible: true });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, isVisible: false }));
+    }, 4000);
+  };
 
-  //   // Simulate API call
-  //   await new Promise((resolve) => setTimeout(resolve, 1500));
-
-  //   // Mock authentication - in real app, this would be an API call
-  //   // const mockUser: AuthUser = {
-  //   //   id: "1",
-  //   //   name: "John Doe",
-  //   //   email: email,
-  //   //   phone: "+1 (555) 123-4567",
-  //   // };
-
-  //   // setUser(mockUser);
-  //   // localStorage.setItem("bellavista_user", JSON.stringify(mockUser));
-  //   setIsLoading(false);
-  //   return true;
-  // };
-
-  // const signup = async (
-  //   name: string,
-  //   email: string,
-  //   password: string,
-  //   phone?: string
-  // ): Promise<boolean> => {
-  //   setIsLoading(true);
-
-  //   // Simulate API call
-  //   await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  //   // Mock user creation
-  //   const newUser: AuthUser = {
-  //     id: Date.now().toString(),
-  //     name,
-  //     email,
-  //     phone,
-  //   };
-
-  //   setUser(newUser);
-  //   localStorage.setItem("bellavista_user", JSON.stringify(newUser));
-  //   setIsLoading(false);
-  //   return true;
-  // };
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  };
 
   const logout = () => {
     // setUser(null);
@@ -90,7 +67,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, logout, isLoading, showToast }}>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={closeToast}
+      />
       {children}
     </AuthContext.Provider>
   );

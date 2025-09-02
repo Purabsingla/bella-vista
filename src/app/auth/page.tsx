@@ -26,8 +26,8 @@ const Auth: React.FC = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const { isLoading } = useAuth();
+  const [rememberMe, setRememberMe] = useState(false);
+  const { isLoading, showToast } = useAuth();
   const navigate = useRouter();
   const searchParams = useSearchParams();
 
@@ -84,8 +84,10 @@ const Auth: React.FC = () => {
       if (!isLogin) {
         // SignUp using Firebase
         await signUp(formData.email, formData.password);
+        showToast("Account created successfully!", "success");
       } else {
-        await signIn(formData.email, formData.password, true);
+        await signIn(formData.email, formData.password, rememberMe);
+        showToast("Login successful!", "success");
       }
 
       if (success) {
@@ -106,46 +108,6 @@ const Auth: React.FC = () => {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-violet-400/30 to-purple-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-fuchsia-400/30 to-pink-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-2000" />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-400/30 to-violet-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-4000" />
-      </div>
-
-      {/* Floating Auth Icons */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-20 left-10 text-4xl opacity-10 animate-bounce"
-          style={{ animationDelay: "0s" }}
-        >
-          🔐
-        </div>
-        <div
-          className="absolute top-40 right-20 text-3xl opacity-10 animate-bounce"
-          style={{ animationDelay: "1s" }}
-        >
-          👤
-        </div>
-        <div
-          className="absolute bottom-40 left-20 text-5xl opacity-10 animate-bounce"
-          style={{ animationDelay: "2s" }}
-        >
-          ✉️
-        </div>
-        <div
-          className="absolute bottom-20 right-10 text-4xl opacity-10 animate-bounce"
-          style={{ animationDelay: "3s" }}
-        >
-          🍽️
-        </div>
-        <div
-          className="absolute top-1/2 left-5 text-3xl opacity-10 animate-bounce"
-          style={{ animationDelay: "4s" }}
-        >
-          🔑
-        </div>
-        <div
-          className="absolute top-1/3 right-5 text-4xl opacity-10 animate-bounce"
-          style={{ animationDelay: "5s" }}
-        >
-          🎉
-        </div>
       </div>
 
       <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -293,6 +255,24 @@ const Auth: React.FC = () => {
                     </p>
                   )}
                 </div>
+
+                {isLogin && (
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="interactive w-4 h-4 text-amber-600 bg-white/10 border-white/20 rounded focus:ring-amber-400 focus:ring-2"
+                    />
+                    <label
+                      htmlFor="rememberMe"
+                      className="ml-2 text-gray-300 text-sm"
+                    >
+                      Remember me for 30 days
+                    </label>
+                  </div>
+                )}
 
                 {!isLogin && (
                   <div>
