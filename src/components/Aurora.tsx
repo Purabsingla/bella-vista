@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const Aurora: React.FC = () => {
   return (
@@ -11,4 +11,4 @@ const Aurora: React.FC = () => {
   );
 };
 
-export default Aurora;
+export default React.memo(Aurora);
