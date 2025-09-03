@@ -5,14 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
-import {
-  EyeIcon,
-  EyeOff,
-  UserIcon,
-  FolderCode,
-  PhoneIcon,
-  UserLock,
-} from "lucide-react";
+import { EyeIcon, EyeOff, UserIcon, FolderCode, UserLock } from "lucide-react";
 import { signIn, signUp } from "@/firebase/firebaseAuth";
 
 const Auth: React.FC = () => {
@@ -28,7 +21,7 @@ const Auth: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [rememberMe, setRememberMe] = useState(false);
   const { isLoading, showToast } = useAuth();
-  const navigate = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const from = searchParams.get("from") || "/";
@@ -85,9 +78,26 @@ const Auth: React.FC = () => {
     try {
       if (!isLogin) {
         // SignUp using Firebase
-        await signUp(formData.name, formData.email, formData.password);
-        showToast("Account created successfully!", "success");
-        setIsLogin(true);
+        const userCred = await signUp(
+          formData.name,
+          formData.email,
+          formData.password
+        );
+        if (userCred) {
+          // Save extra info in Firestore via API route
+          await fetch("/api/users", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              uid: userCred.user.uid,
+              email: formData.email,
+              name: formData.name,
+              role: "user", // default
+            }),
+          });
+          showToast("Account created successfully!", "success");
+          router.replace(from);
+        }
       } else {
         // SignIn Using Firebase
         const userCredentials = await signIn(
@@ -99,7 +109,7 @@ const Auth: React.FC = () => {
         // Checking Success or not
         if (userCredentials) {
           showToast("Login successful!", "success");
-          navigate.replace(from);
+          router.replace(from);
         }
       }
     } catch (error) {
@@ -225,25 +235,6 @@ const Auth: React.FC = () => {
                     <p className="text-red-400 text-sm mt-1">{errors.email}</p>
                   )}
                 </div>
-
-                {!isLogin && (
-                  <div>
-                    <label className="block text-white font-medium mb-2">
-                      Phone Number (Optional)
-                    </label>
-                    <div className="relative">
-                      <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="interactive w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
-                        placeholder="Enter your phone number"
-                      />
-                    </div>
-                  </div>
-                )}
 
                 <div>
                   <label className="block text-white font-medium mb-2">

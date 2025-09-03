@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/firebase/firebase";
 import Toast from "@/components/Toast";
+import { logOut } from "@/firebase/firebaseAuth";
 
 interface AuthContextType {
   user: User | null;
@@ -63,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = () => {
-    // setUser(null);
+    logOut();
     localStorage.removeItem("bellavista_cart");
   };
 
