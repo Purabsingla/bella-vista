@@ -14,6 +14,8 @@ export async function POST(req: Request) {
       );
     }
 
+    console.log("Creating user:", { uid, email, name, role });
+
     await setDoc(doc(db, "users", uid), {
       uid,
       email,

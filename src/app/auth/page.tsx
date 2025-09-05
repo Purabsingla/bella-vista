@@ -84,10 +84,16 @@ const Auth: React.FC = () => {
           formData.password
         );
         if (userCred) {
+          //passing token into head
+          const token = await userCred.user.getIdToken();
+
           // Save extra info in Firestore via API route
           await fetch("/api/users", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({
               uid: userCred.user.uid,
               email: formData.email,

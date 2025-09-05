@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import SplitText from "@/components/SplitText";
 import FadeContent from "@/components/FadeContent";
 import { Calendar, Clock, Users, Phone, Mail, CheckCircle } from "lucide-react";
+import { useForm } from "react-hook-form";
 
 const timeSlots = [
   "5:00 PM",
@@ -31,24 +32,31 @@ const partySizes = [
   { value: "9+", label: "9+ Guests (Call us)" },
 ];
 
+type Reservation = {
+  name: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  guests: string;
+  specialRequests: string;
+};
+
+const today = new Date().toISOString().split("T")[0];
+
 const Reservation: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    date: "",
-    time: "",
-    guests: "",
-    specialRequests: "",
+  const { register, handleSubmit, reset, watch } = useForm<Reservation>({
+    defaultValues: {
+      date: today,
+    },
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (Data: Reservation) => {
     setIsSubmitting(true);
-
+    console.log(Data);
     // Simulate reservation submission
     await new Promise((resolve) => setTimeout(resolve, 2500));
 
@@ -56,33 +64,8 @@ const Reservation: React.FC = () => {
     setIsSubmitted(true);
 
     // Reset form after showing success message
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        date: "",
-        time: "",
-        guests: "",
-        specialRequests: "",
-      });
-    }, 5000);
+    reset();
   };
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // Get today's date in YYYY-MM-DD format for min date
-  const today = new Date().toISOString().split("T")[0];
 
   if (isSubmitted) {
     return (
@@ -96,15 +79,15 @@ const Reservation: React.FC = () => {
               Reservation Confirmed!
             </h2>
             <p className="text-xl text-gray-300 mb-6">
-              Thank you, {formData.name}! Your table for {formData.guests}{" "}
-              {parseInt(formData.guests) === 1 ? "guest" : "guests"} on{" "}
-              {new Date(formData.date).toLocaleDateString("en-US", {
+              Thank you, {watch("name")}! Your table for {watch("guests")}{" "}
+              {parseInt(watch("guests")) === 1 ? "guest" : "guests"} on{" "}
+              {new Date(watch("date")).toLocaleDateString("en-US", {
                 weekday: "long",
                 year: "numeric",
                 month: "long",
                 day: "numeric",
               })}{" "}
-              at {formData.time} has been confirmed.
+              at {watch("time")} has been confirmed.
             </p>
             <div className="bg-amber-600/20 border border-amber-600/50 rounded-lg p-6 mb-8">
               <h3 className="text-lg font-semibold text-amber-400 mb-2">
@@ -112,40 +95,32 @@ const Reservation: React.FC = () => {
               </h3>
               <div className="text-gray-300 space-y-2">
                 <p>
-                  <strong>Name:</strong> {formData.name}
+                  <strong>Name:</strong> {watch("name")}
                 </p>
                 <p>
                   <strong>Date:</strong>{" "}
-                  {new Date(formData.date).toLocaleDateString()}
+                  {new Date(watch("date")).toLocaleDateString()}
                 </p>
                 <p>
-                  <strong>Time:</strong> {formData.time}
+                  <strong>Time:</strong> {watch("time")}
                 </p>
                 <p>
-                  <strong>Party Size:</strong> {formData.guests}{" "}
-                  {parseInt(formData.guests) === 1 ? "guest" : "guests"}
+                  <strong>Party Size:</strong> {watch("guests")}{" "}
+                  {parseInt(watch("guests")) === 1 ? "guest" : "guests"}
                 </p>
                 <p>
-                  <strong>Contact:</strong> {formData.email}
+                  <strong>Contact:</strong> {watch("email")}
                 </p>
               </div>
             </div>
             <p className="text-gray-400 mb-6">
-              A confirmation email has been sent to {formData.email}. If you
+              A confirmation email has been sent to {watch("email")}. If you
               need to make any changes, please call us at (555) 123-4567.
             </p>
             <button
               onClick={() => {
                 setIsSubmitted(false);
-                setFormData({
-                  name: "",
-                  email: "",
-                  phone: "",
-                  date: "",
-                  time: "",
-                  guests: "",
-                  specialRequests: "",
-                });
+                reset();
               }}
               className="interactive bg-gradient-to-r from-amber-600 to-amber-500 text-white px-8 py-3 rounded-full font-semibold hover:from-amber-500 hover:to-amber-400 transition-all duration-300 transform hover:scale-105"
             >
@@ -272,7 +247,7 @@ const Reservation: React.FC = () => {
                   Reserve Your Table
                 </h3>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   {/* Personal Information */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -283,12 +258,8 @@ const Reservation: React.FC = () => {
                         Full Name *
                       </label>
                       <input
-                        type="text"
+                        {...register("name", { required: true })}
                         id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
                         className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
                         placeholder="Your full name"
                       />
@@ -302,12 +273,8 @@ const Reservation: React.FC = () => {
                         Email Address *
                       </label>
                       <input
-                        type="email"
+                        {...register("email", { required: true })}
                         id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
                         className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
                         placeholder="your@email.com"
                       />
@@ -322,12 +289,8 @@ const Reservation: React.FC = () => {
                       Phone Number *
                     </label>
                     <input
-                      type="tel"
+                      {...register("phone", { required: true })}
                       id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
                       className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
                       placeholder="(555) 123-4567"
                     />
@@ -345,11 +308,8 @@ const Reservation: React.FC = () => {
                       <input
                         type="date"
                         id="date"
-                        name="date"
-                        value={formData.date}
-                        onChange={handleChange}
+                        {...register("date", { required: true })}
                         min={today}
-                        required
                         className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
                       />
                     </div>
@@ -363,10 +323,7 @@ const Reservation: React.FC = () => {
                       </label>
                       <select
                         id="time"
-                        name="time"
-                        value={formData.time}
-                        onChange={handleChange}
-                        required
+                        {...register("time", { required: true })}
                         className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
                       >
                         <option value="" className="bg-gray-800">
@@ -393,10 +350,7 @@ const Reservation: React.FC = () => {
                       </label>
                       <select
                         id="guests"
-                        name="guests"
-                        value={formData.guests}
-                        onChange={handleChange}
-                        required
+                        {...register("guests", { required: true })}
                         className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
                       >
                         <option value="" className="bg-gray-800">
@@ -424,9 +378,7 @@ const Reservation: React.FC = () => {
                     </label>
                     <textarea
                       id="specialRequests"
-                      name="specialRequests"
-                      value={formData.specialRequests}
-                      onChange={handleChange}
+                      {...register("specialRequests")}
                       rows={4}
                       className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300 resize-none"
                       placeholder="Any dietary restrictions, special occasions, or seating preferences..."
