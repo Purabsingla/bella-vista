@@ -105,6 +105,9 @@ const Auth: React.FC = () => {
           router.replace(from);
         }
       } else {
+        console.log("SignIn Works");
+        console.log("Data is ", formData);
+
         // SignIn Using Firebase
         const userCredentials = await signIn(
           formData.email,

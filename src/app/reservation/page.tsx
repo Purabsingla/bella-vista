@@ -5,6 +5,7 @@ import SplitText from "@/components/SplitText";
 import FadeContent from "@/components/FadeContent";
 import { Calendar, Clock, Users, Phone, Mail, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { auth } from "@/firebase/firebase";
 
 const timeSlots = [
   "5:00 PM",
@@ -57,8 +58,17 @@ const Reservation: React.FC = () => {
   const onSubmit = async (Data: Reservation) => {
     setIsSubmitting(true);
     console.log(Data);
+
     // Simulate reservation submission
     await new Promise((resolve) => setTimeout(resolve, 2500));
+    await fetch("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: auth.currentUser?.uid, //persons Uid
+        ...Data,
+      }),
+    });
 
     setIsSubmitting(false);
     setIsSubmitted(true);

@@ -48,7 +48,11 @@ export const signIn = async (
   );
 
   // 2️⃣ Sign in user
-  const userCred = await signInWithEmailAndPassword(auth, email, password);
+  const userCred = await signInWithEmailAndPassword(
+    auth,
+    email.trim(),
+    password.trim()
+  );
 
   // 3️⃣ Store login timestamp for expiry check
   localStorage.setItem("auth_login_time", Date.now().toString());

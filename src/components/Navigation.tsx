@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Playfair_Display, Montserrat } from "next/font/google";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import LoaderLink from "./LoaderLink";
 
 const playfairDisplay = Playfair_Display({
   weight: "400",
@@ -38,20 +39,23 @@ const Navigation: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="interactive flex items-center space-x-2">
+          <LoaderLink
+            href="/"
+            className="interactive flex items-center space-x-2"
+          >
             <Utensils className="w-8 h-8 text-amber-400" />
             <span
               className={`text-xl font-bold text-white ${playfairDisplay.className}`}
             >
               Bella Vista
             </span>
-          </Link>
+          </LoaderLink>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               {navItems.map((item) => (
-                <Link
+                <LoaderLink
                   key={item.path}
                   href={item.path}
                   className={`interactive px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
@@ -63,7 +67,7 @@ const Navigation: React.FC = () => {
                   `}
                 >
                   {item.label}
-                </Link>
+                </LoaderLink>
               ))}
             </div>
           </div>
@@ -92,12 +96,12 @@ const Navigation: React.FC = () => {
                 </button>
                 <div className="absolute right-0 mt-2 w-48 bg-black/90 backdrop-blur-lg rounded-lg shadow-lg border border-white/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                   <div className="py-2">
-                    <Link
+                    <LoaderLink
                       href="/reservation"
                       className="interactive block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10"
                     >
                       My Reservations
-                    </Link>
+                    </LoaderLink>
                     <button
                       onClick={logout}
                       className="interactive w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10"
@@ -108,12 +112,12 @@ const Navigation: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <Link
+              <LoaderLink
                 href="/auth"
                 className="interactive bg-amber-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-500 transition-colors"
               >
                 Sign In
-              </Link>
+              </LoaderLink>
             )}
           </div>
 
@@ -138,7 +142,7 @@ const Navigation: React.FC = () => {
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-black/40 backdrop-blur-lg">
             {navItems.map((item) => (
-              <Link
+              <LoaderLink
                 key={item.path}
                 href={item.path}
                 onClick={() => setIsOpen(false)}
@@ -150,7 +154,7 @@ const Navigation: React.FC = () => {
                 ${montserrat.className} `}
               >
                 {item.label}
-              </Link>
+              </LoaderLink>
             ))}
 
             {/* Mobile User Actions */}
@@ -186,13 +190,13 @@ const Navigation: React.FC = () => {
                   </button>
                 </>
               ) : (
-                <Link
+                <LoaderLink
                   href="/auth"
                   onClick={() => setIsOpen(false)}
                   className="interactive block px-3 py-2 text-amber-400 hover:text-amber-300"
                 >
                   Sign In
-                </Link>
+                </LoaderLink>
               )}
             </div>
           </div>
