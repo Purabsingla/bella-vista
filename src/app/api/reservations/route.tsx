@@ -27,9 +27,10 @@ export async function POST(req: Request) {
       guests,
       specialRequests: specialRequests || "",
       createdAt: serverTimestamp(),
+      status: "pending", //initial status
     });
 
-    return NextResponse.json({ success: true, id: docRef.id });
+    return NextResponse.json({ status: 200, success: true, id: docRef.id });
   } catch (error) {
     console.error("Error saving reservation:", error);
     return NextResponse.json(

@@ -60,7 +60,7 @@ const Reservation: React.FC = () => {
     console.log(Data);
 
     // Simulate reservation submission
-    await fetch("/api/reservations", {
+    const response = await fetch("/api/reservations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -68,10 +68,14 @@ const Reservation: React.FC = () => {
         ...Data,
       }),
     });
+    const result = await response.json();
+    console.log("Reservation response:", result);
     await new Promise((resolve) => setTimeout(resolve, 2500));
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    if (response.status === 200) {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+    }
   };
 
   if (isSubmitted) {
