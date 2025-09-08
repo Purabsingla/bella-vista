@@ -90,7 +90,6 @@ const mockReservations: Reservation[] = [
 const MyReservations: React.FC = () => {
   const router = useRouter();
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
@@ -101,10 +100,17 @@ const MyReservations: React.FC = () => {
 
     // Simulate API call
     const loadReservations = async () => {
-      setLoading(true);
+      console.log("Loading reservations for user:", auth.currentUser?.uid);
+
+      //Load Reservations from API
+      const response = await fetch(
+        "/api/reservations?userId=" + auth.currentUser?.uid
+      );
+      const data = await response.json();
+      console.log("Fetched reservations:", data);
+      // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
       setReservations(mockReservations);
-      setLoading(false);
     };
 
     loadReservations();
@@ -172,34 +178,6 @@ const MyReservations: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20" />
         <div className="absolute top-1/4 left-1/3 w-80 h-80 bg-gradient-to-r from-indigo-400/25 to-purple-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-2000" />
-      </div>
-
-      {/* Floating Icons */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-20 left-10 text-4xl opacity-10 animate-bounce"
-          style={{ animationDelay: "0s" }}
-        >
-          📅
-        </div>
-        <div
-          className="absolute top-40 right-20 text-3xl opacity-10 animate-bounce"
-          style={{ animationDelay: "1s" }}
-        >
-          🍽️
-        </div>
-        <div
-          className="absolute bottom-40 left-20 text-5xl opacity-10 animate-bounce"
-          style={{ animationDelay: "2s" }}
-        >
-          ⏰
-        </div>
-        <div
-          className="absolute bottom-20 right-10 text-4xl opacity-10 animate-bounce"
-          style={{ animationDelay: "3s" }}
-        >
-          ✨
-        </div>
       </div>
 
       {/* Hero Section */}
@@ -384,17 +362,6 @@ const MyReservations: React.FC = () => {
                       <p className="text-gray-300 text-sm">
                         {reservation.specialRequests || "No special requests"}
                       </p>
-
-                      {reservation.totalAmount && (
-                        <div className="mt-4">
-                          <h4 className="text-white font-semibold mb-1">
-                            Total Amount
-                          </h4>
-                          <p className="text-amber-400 font-bold text-lg">
-                            ${reservation.totalAmount}
-                          </p>
-                        </div>
-                      )}
                     </div>
 
                     {/* Actions */}
