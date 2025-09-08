@@ -97,7 +97,7 @@ const Navigation: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-black/90 backdrop-blur-lg rounded-lg shadow-lg border border-white/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                   <div className="py-2">
                     <LoaderLink
-                      href="/reservation"
+                      href="/reservation/my"
                       className="interactive block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10"
                     >
                       My Reservations

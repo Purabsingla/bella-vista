@@ -60,7 +60,6 @@ const Reservation: React.FC = () => {
     console.log(Data);
 
     // Simulate reservation submission
-    await new Promise((resolve) => setTimeout(resolve, 2500));
     await fetch("/api/reservations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -69,12 +68,10 @@ const Reservation: React.FC = () => {
         ...Data,
       }),
     });
+    await new Promise((resolve) => setTimeout(resolve, 2500));
 
     setIsSubmitting(false);
     setIsSubmitted(true);
-
-    // Reset form after showing success message
-    reset();
   };
 
   if (isSubmitted) {
