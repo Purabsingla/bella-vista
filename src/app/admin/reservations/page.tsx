@@ -11,6 +11,7 @@ import {
   Edit,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Reservation {
   id: string;
@@ -77,6 +78,7 @@ const Reservations: React.FC = () => {
   const [dateFilter, setDateFilter] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const router = useRouter();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -100,16 +102,37 @@ const Reservations: React.FC = () => {
     );
   };
 
+  // Filtering Reservation
   const filteredReservations = reservations.filter((reservation) => {
+    const name = reservation.name?.toLowerCase() || "";
+    const email = reservation.email?.toLowerCase() || "";
+
     const matchesSearch =
-      reservation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.email.toLowerCase().includes(searchTerm.toLowerCase());
+      !searchTerm ||
+      name.includes(searchTerm.toLowerCase()) ||
+      email.includes(searchTerm.toLowerCase());
+
     const matchesStatus =
       statusFilter === "all" || reservation.status === statusFilter;
-    const matchesDate = !dateFilter || reservation.date === dateFilter;
 
-    return matchesSearch && matchesStatus && matchesDate;
+    // const matchesDate = !dateFilter || reservation.date === dateFilter;
+    const matchesDate =
+      !dateFilter ||
+      new Date(reservation.date).toISOString().split("T")[0] === dateFilter;
+
+    return (matchesSearch && matchesStatus) || matchesDate;
   });
+
+  // const filteredReservations = reservations.filter((reservation) => {
+  //   // const matchesSearch =
+  //   //   reservation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   //   reservation.email.toLowerCase().includes(searchTerm.toLowerCase());
+  //   const matchesStatus =
+  //     statusFilter === "all" || reservation.status === statusFilter;
+  //   // const matchesDate = !dateFilter || reservation.date === dateFilter;
+
+  //   return matchesStatus;
+  // });
 
   return (
     <div className="p-6 space-y-6">
@@ -121,7 +144,10 @@ const Reservations: React.FC = () => {
             Manage all restaurant reservations
           </p>
         </div>
-        <button className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2">
+        <button
+          className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2"
+          onClick={() => router.push("/reservation")}
+        >
           <Calendar className="w-4 h-4" />
           New Reservation
         </button>

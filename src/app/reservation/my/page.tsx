@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import SplitText from "@/components/SplitText";
 import FadeContent from "@/components/FadeContent";
-
+import Toast from "@/components/Toast";
 import { auth } from "@/firebase/firebase";
 import {
   Calendar,
@@ -15,6 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLoader } from "@/context/LoaderContext";
 
 interface Reservation {
   id: string;
@@ -89,8 +90,30 @@ const mockReservations: Reservation[] = [
 const MyReservations: React.FC = () => {
   const router = useRouter();
   const [reservations, setReservations] = useState<Reservation[]>([]);
-
   const [filter, setFilter] = useState("all");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+    isVisible: boolean;
+  }>({
+    message: "",
+    type: "success",
+    isVisible: false,
+  });
+
+  // Loader Context
+  const { setLoading } = useLoader();
+
+  const showToast = (message: string, type: "success" | "error" | "info") => {
+    setToast({ message, type, isVisible: true });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, isVisible: false }));
+    }, 4000);
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  };
 
   useEffect(() => {
     if (!auth.currentUser) {
@@ -100,17 +123,19 @@ const MyReservations: React.FC = () => {
 
     // Simulate API call
     const loadReservations = async () => {
+      setLoading(true);
       const response = await fetch(
         "/api/reservations?userId=" + auth.currentUser?.uid
       );
       const data = await response.json();
       console.log("Fetched reservations:", data);
       await new Promise((resolve) => setTimeout(resolve, 1500));
+      setLoading(false);
       setReservations(data.reservations || mockReservations);
     };
 
     loadReservations();
-  }, [router]);
+  }, [router, setLoading]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -143,11 +168,6 @@ const MyReservations: React.FC = () => {
   };
 
   const cancelReservation = async (id: string) => {
-    setReservations((prev) =>
-      prev.map((res) =>
-        res.id === id ? { ...res, status: "cancelled" as const } : res
-      )
-    );
     try {
       const res = await fetch(`/api/reservations/${id}/status`, {
         method: "PATCH",
@@ -157,7 +177,14 @@ const MyReservations: React.FC = () => {
 
       const data = await res.json();
       console.log("Updated:", data);
+      setReservations((prev) =>
+        prev.map((res) =>
+          res.id === id ? { ...res, status: "cancelled" as const } : res
+        )
+      );
+      showToast("Reservation cancelled successfully", "success");
     } catch (err) {
+      showToast("Something's Wrong. please try again later", "error");
       console.error("Update failed:", err);
     }
   };
@@ -188,6 +215,14 @@ const MyReservations: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={closeToast}
+      />
+
       {/* Background Animation */}
       {backgroundAnimations}
 

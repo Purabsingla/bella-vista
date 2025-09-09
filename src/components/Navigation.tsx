@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { Menu, X, Utensils, ShoppingBagIcon, UserIcon } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Playfair_Display, Montserrat } from "next/font/google";
 import { useAuth } from "@/context/AuthContext";
