@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import SplitText from "@/components/SplitText/SplitText";
+import SplitText from "@/components/SplitText";
 import FadeContent from "@/components/FadeContent";
-import { auth } from "@/firebase/firebase";
 
+import { auth } from "@/firebase/firebase";
 import {
   Calendar,
   Clock,
@@ -14,8 +13,8 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Edit,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Reservation {
   id: string;
@@ -90,31 +89,23 @@ const mockReservations: Reservation[] = [
 const MyReservations: React.FC = () => {
   const router = useRouter();
   const [reservations, setReservations] = useState<Reservation[]>([]);
+
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    if (!auth.currentUser?.uid) {
-      router.push("/auth?from=/my-reservations");
+    if (!auth.currentUser) {
+      router.replace("/auth?from=?/reservation/my");
       return;
     }
 
     // Simulate API call
     const loadReservations = async () => {
-      console.log("Loading reservations for user:", auth.currentUser?.uid);
-
-      //Load Reservations from API
-      const response = await fetch(
-        "/api/reservations?userId=" + auth.currentUser?.uid
-      );
-      const data = await response.json();
-      console.log("Fetched reservations:", data);
-      // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
       setReservations(mockReservations);
     };
 
     loadReservations();
-  }, [auth.currentUser?.uid, router]);
+  }, [auth.currentUser]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -167,10 +158,6 @@ const MyReservations: React.FC = () => {
     (res) => res.status === "completed"
   ).length;
 
-  //   if (loading) {
-  //     return <Loader fullScreen text="Loading your reservations..." />;
-  //   }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
       {/* Background Animation */}
@@ -180,20 +167,39 @@ const MyReservations: React.FC = () => {
         <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-2000" />
       </div>
 
+      {/* Floating Icons */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute top-20 left-10 text-4xl opacity-10 animate-bounce"
+          style={{ animationDelay: "0s" }}
+        >
+          📅
+        </div>
+        <div
+          className="absolute top-40 right-20 text-3xl opacity-10 animate-bounce"
+          style={{ animationDelay: "1s" }}
+        >
+          🍽️
+        </div>
+        <div
+          className="absolute bottom-40 left-20 text-5xl opacity-10 animate-bounce"
+          style={{ animationDelay: "2s" }}
+        >
+          ⏰
+        </div>
+        <div
+          className="absolute bottom-20 right-10 text-4xl opacity-10 animate-bounce"
+          style={{ animationDelay: "3s" }}
+        >
+          ✨
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section className="py-20 px-4 text-center">
-        <SplitText
-          text="My Reservations"
-          className="text-5xl md:text-6xl font-bold text-white mb-4"
-          delay={70}
-          duration={0.2}
-          ease="power3.out"
-          splitType="chars"
-          from={{ opacity: 0, y: 40 }}
-          to={{ opacity: 1, y: 0 }}
-          threshold={0}
-          rootMargin="0px 0px -20% 0px"
-        />
+        <SplitText className="text-5xl md:text-6xl font-bold text-white mb-4">
+          My Reservations
+        </SplitText>
         <FadeContent delay={500}>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Track and manage all your dining reservations at Bella Vista
@@ -362,6 +368,17 @@ const MyReservations: React.FC = () => {
                       <p className="text-gray-300 text-sm">
                         {reservation.specialRequests || "No special requests"}
                       </p>
+
+                      {reservation.totalAmount && (
+                        <div className="mt-4">
+                          <h4 className="text-white font-semibold mb-1">
+                            Total Amount
+                          </h4>
+                          <p className="text-amber-400 font-bold text-lg">
+                            ${reservation.totalAmount}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Actions */}
@@ -372,34 +389,24 @@ const MyReservations: React.FC = () => {
                       </div>
 
                       <div className="space-y-2">
-                        {reservation.status === "confirmed" &&
-                          new Date(reservation.date) > new Date() && (
-                            <>
-                              <button className="interactive w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500 transition-colors flex items-center justify-center gap-2">
-                                <Edit className="w-4 h-4" />
-                                Modify
-                              </button>
-                              <button
-                                onClick={() =>
-                                  cancelReservation(reservation.id)
-                                }
-                                className="interactive w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500 transition-colors flex items-center justify-center gap-2"
-                              >
-                                <XCircle className="w-4 h-4" />
-                                Cancel
-                              </button>
-                            </>
-                          )}
+                        {(reservation.status === "confirmed" ||
+                          reservation.status === "pending") && (
+                          <>
+                            <button
+                              onClick={() => cancelReservation(reservation.id)}
+                              className="interactive w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500 transition-colors flex items-center justify-center gap-2"
+                            >
+                              <XCircle className="w-4 h-4" />
+                              Cancel
+                            </button>
+                          </>
+                        )}
 
                         {reservation.status === "completed" && (
                           <button className="interactive w-full bg-amber-600 text-white py-2 px-4 rounded-lg hover:bg-amber-500 transition-colors">
                             Book Again
                           </button>
                         )}
-
-                        <button className="interactive w-full bg-white/10 text-white py-2 px-4 rounded-lg hover:bg-white/20 transition-colors border border-white/20">
-                          View Details
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -413,7 +420,7 @@ const MyReservations: React.FC = () => {
         <FadeContent delay={1200}>
           <div className="mt-12 text-center">
             <button
-              onClick={() => router.push("/reservation")}
+              onClick={() => router.replace("/reservation")}
               className="interactive bg-gradient-to-r from-amber-600 to-amber-500 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-amber-500 hover:to-amber-400 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               Make New Reservation

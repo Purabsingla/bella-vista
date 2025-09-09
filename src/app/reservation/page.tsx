@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import SplitText from "@/components/SplitText";
+import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
 import { Calendar, Clock, Users, Phone, Mail, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -173,9 +173,18 @@ const Reservation: React.FC = () => {
       </div>
       {/* Hero Section */}
       <section className="py-20 px-4 text-center">
-        <SplitText className="text-5xl md:text-6xl font-bold text-white mb-4">
-          Make a Reservation
-        </SplitText>
+        <SplitText
+          text="Make a Reservation"
+          className="text-4xl md:text-5xl font-bold text-white mb-12 text-center"
+          delay={100}
+          duration={0.6}
+          ease="power3.out"
+          splitType="chars"
+          from={{ opacity: 0, y: 40 }}
+          to={{ opacity: 1, y: 0 }}
+          threshold={0}
+          rootMargin="0px 0px -20px 0px" // trigger ~50px before fully entering
+        />
         <FadeContent delay={500}>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Reserve your table at Bella Vista and experience an unforgettable
