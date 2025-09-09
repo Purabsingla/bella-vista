@@ -100,12 +100,17 @@ const MyReservations: React.FC = () => {
 
     // Simulate API call
     const loadReservations = async () => {
+      const response = await fetch(
+        "/api/reservations?userId=" + auth.currentUser?.uid
+      );
+      const data = await response.json();
+      console.log("Fetched reservations:", data);
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      setReservations(mockReservations);
+      setReservations(data.reservations || mockReservations);
     };
 
     loadReservations();
-  }, [auth.currentUser]);
+  }, [router]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -137,12 +142,24 @@ const MyReservations: React.FC = () => {
     }
   };
 
-  const cancelReservation = (id: string) => {
+  const cancelReservation = async (id: string) => {
     setReservations((prev) =>
       prev.map((res) =>
         res.id === id ? { ...res, status: "cancelled" as const } : res
       )
     );
+    try {
+      const res = await fetch(`/api/reservations/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled" }),
+      });
+
+      const data = await res.json();
+      console.log("Updated:", data);
+    } catch (err) {
+      console.error("Update failed:", err);
+    }
   };
 
   const filteredReservations = reservations.filter((reservation) => {
@@ -158,42 +175,21 @@ const MyReservations: React.FC = () => {
     (res) => res.status === "completed"
   ).length;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
-      {/* Background Animation */}
+  const backgroundAnimations = React.useMemo(
+    () => (
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20" />
         <div className="absolute top-1/4 left-1/3 w-80 h-80 bg-gradient-to-r from-indigo-400/25 to-purple-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-purple-400/25 to-pink-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-2000" />
       </div>
+    ),
+    []
+  );
 
-      {/* Floating Icons */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-20 left-10 text-4xl opacity-10 animate-bounce"
-          style={{ animationDelay: "0s" }}
-        >
-          📅
-        </div>
-        <div
-          className="absolute top-40 right-20 text-3xl opacity-10 animate-bounce"
-          style={{ animationDelay: "1s" }}
-        >
-          🍽️
-        </div>
-        <div
-          className="absolute bottom-40 left-20 text-5xl opacity-10 animate-bounce"
-          style={{ animationDelay: "2s" }}
-        >
-          ⏰
-        </div>
-        <div
-          className="absolute bottom-20 right-10 text-4xl opacity-10 animate-bounce"
-          style={{ animationDelay: "3s" }}
-        >
-          ✨
-        </div>
-      </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
+      {/* Background Animation */}
+      {backgroundAnimations}
 
       {/* Hero Section */}
       <section className="py-20 px-4 text-center">
@@ -302,14 +298,14 @@ const MyReservations: React.FC = () => {
         ) : (
           <div className="space-y-6">
             {filteredReservations.map((reservation, index) => (
-              <FadeContent key={reservation.id} delay={800 + index * 100}>
+              <FadeContent key={reservation.id} delay={400 + index * 90}>
                 <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 hover:bg-white/20 transition-all duration-300">
                   <div className="grid lg:grid-cols-4 gap-6">
                     {/* Reservation Details */}
                     <div className="lg:col-span-2">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xl font-bold text-white">
-                          {reservation.restaurantName}
+                          Bella Vista
                         </h3>
                         <span
                           className={`inline-flex items-center gap-1 px-3 py-1 text-sm font-semibold rounded-full border ${getStatusColor(
