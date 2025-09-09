@@ -6,6 +6,7 @@ import FadeContent from "@/components/FadeContent";
 import { Calendar, Clock, Users, Phone, Mail, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { auth } from "@/firebase/firebase";
+import { useRouter } from "next/navigation";
 
 const timeSlots = [
   "5:00 PM",
@@ -55,7 +56,15 @@ const Reservation: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const router = useRouter();
+
   const onSubmit = async (Data: Reservation) => {
+    //Checking if user is authenticated
+    if (!auth.currentUser) {
+      router.replace("/auth?from=/reservations");
+      return;
+    }
+
     setIsSubmitting(true);
     console.log(Data);
 
@@ -401,7 +410,9 @@ const Reservation: React.FC = () => {
                     disabled={isSubmitting}
                     className="interactive w-full bg-gradient-to-r from-amber-600 to-amber-500 text-white py-4 rounded-lg font-semibold text-lg hover:from-amber-500 hover:to-amber-400 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                   >
-                    {isSubmitting ? (
+                    {auth.currentUser ? (
+                      "Login to Register table"
+                    ) : isSubmitting ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         Confirming Reservation...

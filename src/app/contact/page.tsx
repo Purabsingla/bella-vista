@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import SplitText from "@/components/SplitText";
 import FadeContent from "@/components/FadeContent";
 import { MapPin, Phone, Clock, Mail, Send } from "lucide-react";
+import Toast from "@/components/Toast";
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -16,12 +17,47 @@ const Contact: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+    isVisible: boolean;
+  }>({
+    message: "",
+    type: "success",
+    isVisible: false,
+  });
+
+  const showToast = (message: string, type: "success" | "error" | "info") => {
+    setToast({ message, type, isVisible: true });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, isVisible: false }));
+    }, 4000);
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     // Simulate form submission
+    const response = await fetch("/api/contacts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    const result = await response.json();
+
     await new Promise((resolve) => setTimeout(resolve, 2000));
+    showToast(
+      result.success
+        ? "Message sent successfully!"
+        : "Failed to send message. Please try again.",
+      result.success ? "success" : "error"
+    );
 
     setIsSubmitting(false);
     setIsSubmitted(true);
@@ -42,15 +78,30 @@ const Contact: React.FC = () => {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
-      {/* Liquid Background Animation */}
+  const BackgroundAnimations = React.useMemo(
+    () => (
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20" />
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-400/30 to-blue-400/30 rounded-full mix-blend-multiply filter blur-xl animate-blob" />
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-gradient-to-r from-yellow-400/30 to-pink-400/30 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000" />
         <div className="absolute -bottom-8 left-20 w-96 h-96 bg-gradient-to-r from-pink-400/30 to-yellow-400/30 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000" />
       </div>
+    ),
+    []
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={closeToast}
+      />
+
+      {/* Liquid Background Animation */}
+      {BackgroundAnimations}
 
       {/* Hero Section */}
       <section className="py-20 px-4 text-center">
