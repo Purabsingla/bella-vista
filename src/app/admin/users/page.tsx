@@ -11,6 +11,10 @@ import {
   Crown,
 } from "lucide-react";
 
+import EmployeeRegistrationModal, {
+  EmployeeData,
+} from "@/components/admin/EmployeeRegistration";
+
 interface User {
   id: string;
   name: string;
@@ -63,6 +67,16 @@ const mockUsers: User[] = [
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [roleFilter, setRoleFilter] = useState("all");
+  const [open, setOpen] = React.useState(false);
+
+  const HandleClose = () => {
+    setOpen(false);
+  };
+
+  const HandleSubmit = (data: EmployeeData) => {
+    console.log(data);
+    setOpen(false);
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -134,6 +148,13 @@ const Users: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Employee Registration Form */}
+      <EmployeeRegistrationModal
+        isOpen={open}
+        onClose={HandleClose}
+        onSubmit={HandleSubmit}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -142,7 +163,10 @@ const Users: React.FC = () => {
             Manage user accounts and permissions
           </p>
         </div>
-        <button className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2">
+        <button
+          onClick={() => setOpen(true)}
+          className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2"
+        >
           <Plus className="w-4 h-4" />
           Add Employee
         </button>

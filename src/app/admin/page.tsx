@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-1">
@@ -49,10 +49,10 @@ const Dashboard: React.FC = () => {
             {new Date().toLocaleDateString()}
           </p>
         </div>
-      </div>
+      </header>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
@@ -128,10 +128,10 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Reservations Chart */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
@@ -196,7 +196,7 @@ const Dashboard: React.FC = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </section>
 
       {/* Recent Activity */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
