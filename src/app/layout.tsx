@@ -11,6 +11,10 @@ import { usePathname } from "next/navigation";
 import { LoaderProvider } from "@/context/LoaderContext";
 import RouteChangeLoader from "@/components/RouteChangeLoader";
 
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "@/firebase/firebase";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,6 +23,15 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const userRef = doc(db, "users", user.uid);
+    await updateDoc(userRef, {
+      lastLogin: serverTimestamp(),
+    });
+  }
 });
 
 export default function RootLayout({

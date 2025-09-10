@@ -103,6 +103,8 @@ const Auth: React.FC = () => {
           });
           showToast("Account created successfully!", "success");
           router.replace(from);
+        } else {
+          showToast("ERROR.", "error");
         }
       } else {
         console.log("SignIn Works");

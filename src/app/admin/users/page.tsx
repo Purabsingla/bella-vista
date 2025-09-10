@@ -21,7 +21,7 @@ interface User {
   email: string;
   role: "admin" | "employee" | "user";
   joinDate: string;
-  lastLogin: string;
+  lastLogin: string | null;
   status: "active" | "inactive";
 }
 
@@ -32,7 +32,7 @@ const mockUsers: User[] = [
     email: "marco@bellavista.com",
     role: "admin",
     joinDate: "2020-01-15",
-    lastLogin: "2025-01-15 09:30",
+    lastLogin: null,
     status: "active",
   },
   {
@@ -311,11 +311,11 @@ const Users: React.FC = () => {
                     {new Date(user.joinDate).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.lastLogin}
+                    {user.lastLogin || "Never"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
-                      {user.role !== "admin" && (
+                      {user.role === "employee" && (
                         <button
                           onClick={() => promoteUser(user.id)}
                           className="bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 transition-colors text-xs"
@@ -331,15 +331,19 @@ const Users: React.FC = () => {
                           Demote
                         </button>
                       )}
-                      <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => deleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900 p-1 rounded"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {user.role === "admin" && (
+                        <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      )}
+                      {user.role !== "admin" && (
+                        <button
+                          onClick={() => deleteUser(user.id)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

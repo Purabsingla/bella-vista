@@ -1,4 +1,4 @@
-// src/firebase/auth.js
+// src/firebase/FirebaseAuth.tsx
 import { auth } from "./firebase";
 
 import {
