@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, UserPlus, Eye, EyeOff } from "lucide-react";
 import clsx from "clsx";
+import { useForm } from "react-hook-form";
 
 export interface EmployeeData {
   name: string;
@@ -23,13 +24,7 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
   onClose,
   onSubmit,
 }) => {
-  const [formData, setFormData] = useState<EmployeeData>({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "employee",
-  });
+  const { register, handleSubmit, reset, watch } = useForm<EmployeeData>();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -49,54 +44,43 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
   // Escape key handler
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        reset();
+        onClose();
+      }
     };
     if (isOpen) window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, reset]);
 
   if (!visible) return null;
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
+    if (!watch("name").trim()) newErrors.name = "Name is required";
+    if (!watch("email").trim()) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(watch("email")))
       newErrors.email = "Email is invalid";
-    if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6)
+    if (!watch("password")) newErrors.password = "Password is required";
+    else if (watch("password").length < 6)
       newErrors.password = "At least 6 characters";
-    if (!formData.confirmPassword)
+    if (!watch("confirmPassword"))
       newErrors.confirmPassword = "Confirm your password";
-    else if (formData.password !== formData.confirmPassword)
+    else if (watch("password") !== watch("confirmPassword"))
       newErrors.confirmPassword = "Passwords don’t match";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleOnSubmit = async (Data: EmployeeData) => {
     if (!validateForm()) return;
     setIsSubmitting(true);
     await new Promise((res) => setTimeout(res, 1200));
-    onSubmit(formData);
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      role: "employee",
-    });
+    onSubmit(Data);
+
     setErrors({});
     setIsSubmitting(false);
+    reset();
     onClose();
   };
 
@@ -118,10 +102,13 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <UserPlus className="w-6 h-6 text-amber-600" />
-            Register {formData.role === "admin" ? "Admin" : "Employee"}
+            Register {watch("role") === "admin" ? "Admin" : "Employee"}
           </h3>
           <button
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              reset();
+            }}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-6 h-6" />
@@ -129,7 +116,7 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit(handleOnSubmit)} className="space-y-5">
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -137,9 +124,7 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
             </label>
             <input
               type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
+              {...register("name", { required: true })}
               className={clsx(
                 "w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition",
                 errors.name ? "border-red-500 animate-shake" : "border-gray-300"
@@ -157,9 +142,7 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
             </label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
+              {...register("email", { required: true })}
               className={clsx(
                 "w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition",
                 errors.email
@@ -178,9 +161,7 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
               Role *
             </label>
             <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
+              {...register("role", { required: true })}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             >
               <option value="employee">👨‍🍳 Employee</option>
@@ -192,15 +173,13 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
           {[
             {
               label: "Password",
-              name: "password",
-              value: formData.password,
+              name: "password" as const,
               show: showPassword,
               set: setShowPassword,
             },
             {
               label: "Confirm Password",
-              name: "confirmPassword",
-              value: formData.confirmPassword,
+              name: "confirmPassword" as const,
               show: showConfirmPassword,
               set: setShowConfirmPassword,
             },
@@ -212,9 +191,7 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
               <div className="relative">
                 <input
                   type={f.show ? "text" : "password"}
-                  name={f.name}
-                  value={f.value}
-                  onChange={handleChange}
+                  {...register(f.name, { required: true })}
                   className={clsx(
                     "w-full px-4 py-2 pr-10 rounded-lg border focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition",
                     errors[f.name]
@@ -244,7 +221,10 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
           <div className="flex gap-4 pt-6">
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                onClose();
+                reset();
+              }}
               className="flex-1 px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
               Cancel
@@ -259,7 +239,7 @@ const EmployeeRegistrationModal: React.FC<Props> = ({
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  Create {formData.role === "admin" ? "Admin" : "Employee"}
+                  Create {watch("role") === "admin" ? "Admin" : "Employee"}
                 </>
               )}
             </button>

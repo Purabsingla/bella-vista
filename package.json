@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/nodemailer": "^7.0.1",
     "firebase": "^12.2.1",
+    "firebase-admin": "^13.5.0",
     "gsap": "^3.13.0",
     "lucide-react": "^0.541.0",
     "motion": "^12.23.12",

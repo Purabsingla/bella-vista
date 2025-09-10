@@ -21,7 +21,7 @@ interface User {
   email: string;
   role: "admin" | "employee" | "user";
   joinDate: string;
-  lastLogin: string | null;
+  lastLogin: string | null | undefined;
   status: "active" | "inactive";
 }
 
@@ -73,8 +73,27 @@ const Users: React.FC = () => {
     setOpen(false);
   };
 
-  const HandleSubmit = (data: EmployeeData) => {
+  const HandleSubmit = async (data: EmployeeData) => {
     console.log(data);
+    alert("Data Recieved. Check console for details.");
+    const res = await fetch("/api/admin/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        role: data.role,
+      }),
+    });
+
+    const response = await res.json();
+    if (response.success) {
+      alert("User created with ID: " + response.uid);
+    } else {
+      alert("Error " + response.error);
+    }
+
     setOpen(false);
   };
 
