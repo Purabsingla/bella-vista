@@ -8,7 +8,6 @@ import {
   Calendar,
   Package,
   Users,
-  BarChart3,
   Settings,
   Search,
   Bell,
@@ -29,7 +28,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { path: "/admin/reservations", icon: Calendar, label: "Reservations" },
     { path: "/admin/orders", icon: Package, label: "Orders" },
     { path: "/admin/users", icon: Users, label: "Users" },
-    { path: "/admin/reports", icon: BarChart3, label: "Reports" },
     { path: "/admin/settings", icon: Settings, label: "Settings" },
   ];
 
