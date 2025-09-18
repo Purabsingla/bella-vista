@@ -9,8 +9,6 @@ import {
   Package,
   Users,
   Settings,
-  Search,
-  Bell,
   User,
   LogOut,
   Menu,

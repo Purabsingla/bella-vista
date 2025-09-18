@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase";
 
-export default async function POST(request: Request) {
+export async function POST(request: Request) {
   try {
     // Collecting data from request body
     const { name, email, password, role = "employee" } = await request.json();
@@ -27,5 +27,31 @@ export default async function POST(request: Request) {
   } catch (error) {
     console.log("Error in fetching users:", error);
     return NextResponse.json({ error: error }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    // Fetch all users from Firestore
+    const snapshot = await adminDb.collection("users").get();
+
+    const users = snapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate().toISOString() || null,
+        lastLogin: data.lastLogin?.toDate().toISOString() || null,
+      };
+    });
+
+    return NextResponse.json({ success: true, users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch users" },
+      { status: 500 }
+    );
   }
 }

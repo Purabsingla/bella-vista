@@ -1,16 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Calendar,
-  Filter,
-  Search,
-  Eye,
-  Check,
-  X,
-  Edit,
-  Users,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Calendar, Search, Eye, Check, X, Edit, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Reservation {
@@ -80,6 +71,18 @@ const Reservations: React.FC = () => {
   );
   const router = useRouter();
 
+  useEffect(() => {
+    const getReservations = async () => {
+      const res = await fetch("/api/admin/reservations", {
+        method: "GET",
+      });
+      const data = await res.json();
+      console.log(data.reservations);
+      setReservations(data.reservations);
+    };
+    getReservations();
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -133,6 +136,13 @@ const Reservations: React.FC = () => {
 
   //   return matchesStatus;
   // });
+
+  // Date Formatter for Next.js error
+  function formatDate(dateString: string | null | undefined) {
+    if (!dateString) return;
+    const date = new Date(dateString);
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -188,11 +198,6 @@ const Reservations: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
-
-          <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
-            <Filter className="w-4 h-4" />
-            More Filters
-          </button>
         </div>
       </div>
 
@@ -248,7 +253,7 @@ const Reservations: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {new Date(reservation.date).toLocaleDateString()}
+                      {formatDate(reservation.date)}
                     </div>
                     <div className="text-sm text-gray-500">
                       {reservation.time}

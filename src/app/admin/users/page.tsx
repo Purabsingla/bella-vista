@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users as UsersIcon,
   Plus,
@@ -20,7 +20,7 @@ interface User {
   name: string;
   email: string;
   role: "admin" | "employee" | "user";
-  joinDate: string;
+  createdAt: string;
   lastLogin: string | null | undefined;
   status: "active" | "inactive";
 }
@@ -31,7 +31,7 @@ const mockUsers: User[] = [
     name: "Marco Bellacorte",
     email: "marco@bellavista.com",
     role: "admin",
-    joinDate: "2020-01-15",
+    createdAt: "2020-01-15",
     lastLogin: null,
     status: "active",
   },
@@ -40,7 +40,7 @@ const mockUsers: User[] = [
     name: "Sofia Rodriguez",
     email: "sofia@bellavista.com",
     role: "employee",
-    joinDate: "2021-03-20",
+    createdAt: "2021-03-20",
     lastLogin: "2025-01-15 08:45",
     status: "active",
   },
@@ -49,7 +49,7 @@ const mockUsers: User[] = [
     name: "John Smith",
     email: "john@email.com",
     role: "user",
-    joinDate: "2024-12-01",
+    createdAt: "2024-12-01",
     lastLogin: "2025-01-14 19:20",
     status: "active",
   },
@@ -58,7 +58,7 @@ const mockUsers: User[] = [
     name: "Sarah Johnson",
     email: "sarah@email.com",
     role: "user",
-    joinDate: "2024-11-15",
+    createdAt: "2024-11-15",
     lastLogin: "2025-01-13 18:30",
     status: "active",
   },
@@ -68,6 +68,20 @@ const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [roleFilter, setRoleFilter] = useState("all");
   const [open, setOpen] = React.useState(false);
+
+  //Getting all users, employees
+  useEffect(() => {
+    const handleGetApiCall = async () => {
+      const res = await fetch("/api/admin/users", {
+        method: "GET",
+      });
+      const data = await res.json();
+      console.log(data);
+      setUsers(data.users);
+    };
+
+    handleGetApiCall();
+  }, []);
 
   const HandleClose = () => {
     setOpen(false);
@@ -164,6 +178,12 @@ const Users: React.FC = () => {
   const filteredUsers = users.filter(
     (user) => roleFilter === "all" || user.role === roleFilter
   );
+
+  function formatDate(dateString: string | null | undefined) {
+    if (!dateString) return;
+    const date = new Date(dateString);
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -327,29 +347,13 @@ const Users: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(user.joinDate).toLocaleDateString()}
+                    {formatDate(user.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.lastLogin || "Never"}
+                    {formatDate(user.lastLogin) || "Never"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
-                      {user.role === "employee" && (
-                        <button
-                          onClick={() => promoteUser(user.id)}
-                          className="bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 transition-colors text-xs"
-                        >
-                          Promote
-                        </button>
-                      )}
-                      {user.role !== "user" && (
-                        <button
-                          onClick={() => demoteUser(user.id)}
-                          className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200 transition-colors text-xs"
-                        >
-                          Demote
-                        </button>
-                      )}
                       {user.role === "admin" && (
                         <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
                           <Edit className="w-4 h-4" />
