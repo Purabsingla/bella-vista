@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     const { userId, name, email, phone, date, time, guests, notes } =
       await request.json();
     // Store Reservation details in Firestore
-    await adminDb.collection("reservations").doc(userId).set({
+    await adminDb.collection("reservations").add({
       userId,
       name,
       email,
@@ -49,5 +49,17 @@ export async function POST(request: Request) {
   } catch (error) {
     console.log("Error in fetching users:", error);
     return NextResponse.json({ error: error }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    return NextResponse.json({ success: true, message: "reservation updated" });
+  } catch (error) {
+    console.log("Error in updating reservation:", error);
+    return NextResponse.json({
+      status: 500,
+      error: "Failed to Update Reservation",
+    });
   }
 }

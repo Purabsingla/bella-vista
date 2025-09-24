@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { Calendar, Search, Eye, Check, X, Edit, Users } from "lucide-react";
-import { useRouter } from "next/navigation";
 import ReservationModal, {
   ReservationData,
 } from "@/components/admin/ReservationModal";
 import Toast from "@/components/Toast";
 import { auth } from "@/firebase/firebase";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface Reservation {
   id: string;
@@ -75,6 +75,7 @@ const Reservations: React.FC = () => {
     new Date().toISOString().split("T")[0]
   );
   const [open, setOpen] = React.useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info";
@@ -141,14 +142,14 @@ const Reservations: React.FC = () => {
       email.includes(searchTerm.toLowerCase());
 
     const matchesStatus =
-      statusFilter === "all" || reservation.status === statusFilter;
-
+      reservation.status === statusFilter || statusFilter === "all";
+    console.log("Reservation Status:", matchesStatus);
     // const matchesDate = !dateFilter || reservation.date === dateFilter;
     const matchesDate =
       !dateFilter ||
       new Date(reservation.date).toISOString().split("T")[0] === dateFilter;
-
-    return (matchesSearch && matchesStatus) || matchesDate;
+    console.log("Reservation Date:", matchesDate);
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   // const filteredReservations = reservations.filter((reservation) => {
@@ -202,11 +203,20 @@ const Reservations: React.FC = () => {
         onClose={closeToast}
       />
 
-      {/* Modal  */}
+      {/* Reservation Modal */}
       <ReservationModal
         isOpen={open}
         onClose={handleClose}
         onSubmit={HandleSubmit}
+      />
+
+      {/* Confirmation Modal or Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        onConfirm={() => {
+          console.log("Confirmed action");
+        }}
       />
 
       {/* Header */}
@@ -348,23 +358,17 @@ const Reservations: React.FC = () => {
                       {reservation.status === "pending" && (
                         <>
                           <button
-                            onClick={() =>
-                              updateReservationStatus(
-                                reservation.id,
-                                "approved"
-                              )
-                            }
+                            onClick={() => {
+                              setConfirmDialogOpen(true);
+                            }}
                             className="text-green-600 hover:text-green-900 p-1 rounded"
                           >
                             <Check className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() =>
-                              updateReservationStatus(
-                                reservation.id,
-                                "cancelled"
-                              )
-                            }
+                            onClick={() => {
+                              setConfirmDialogOpen(true);
+                            }}
                             className="text-red-600 hover:text-red-900 p-1 rounded"
                           >
                             <X className="w-4 h-4" />
