@@ -11,6 +11,7 @@ export interface ReservationData {
   date: string;
   time: string;
   guests: number;
+  phone: string;
   notes?: string;
 }
 
@@ -21,7 +22,7 @@ interface Props {
 }
 
 const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
-  const { register, handleSubmit, reset,watch } = useForm<ReservationData>();
+  const { register, handleSubmit, reset, watch } = useForm<ReservationData>();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [visible, setVisible] = useState(isOpen);
@@ -35,6 +36,18 @@ const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
     }
   }, [isOpen]);
 
+  // Escape Key Handler
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        reset();
+        onClose();
+      }
+    };
+    if (isOpen) window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isOpen, onClose, reset]);
+
   if (!visible) return null;
 
   const validateForm = () => {
@@ -45,11 +58,16 @@ const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
     if (!watch("date")) newErrors.date = "Date is required";
     if (!watch("time")) newErrors.time = "Time is required";
     if (!watch("guests")) newErrors.guests = "Number of guests required";
+    if (!watch("phone") && !Number(watch("phone")))
+      newErrors.phone = "Phone Number is required";
+    console.log("Validation Errors:", newErrors);
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleOnSubmit = async (data: ReservationData) => {
+    console.log("is this even working?");
     if (!validateForm()) return;
     setIsSubmitting(true);
     await new Promise((res) => setTimeout(res, 1000));
@@ -62,7 +80,7 @@ const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
   return (
     <div
       className={clsx(
-        "fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300",
+        "fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 h-screen",
         isOpen ? "opacity-100" : "opacity-0"
       )}
     >
@@ -70,7 +88,9 @@ const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
       <div
         className={clsx(
           "relative w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 transform transition-all duration-300",
-          isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4"
+          isOpen
+            ? "scale-100 opacity-100 translate-y-0"
+            : "scale-95 opacity-0 translate-y-4"
         )}
       >
         {/* Header */}
@@ -112,6 +132,18 @@ const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
             <input
               type="email"
               {...register("email", { required: true })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone Number *
+            </label>
+            <input
+              type="tel"
+              {...register("phone", { required: true })}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>

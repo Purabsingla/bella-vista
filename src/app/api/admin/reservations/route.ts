@@ -25,3 +25,29 @@ export async function GET() {
     );
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    // Collecting data from request body
+    const { userId, name, email, phone, date, time, guests, notes } =
+      await request.json();
+    // Store Reservation details in Firestore
+    await adminDb.collection("reservations").doc(userId).set({
+      userId,
+      name,
+      email,
+      phone,
+      date,
+      time,
+      guests,
+      specialRequest: notes,
+      createdAt: new Date(),
+      status: "pending",
+    });
+
+    return NextResponse.json({ success: true, message: "reservation added" });
+  } catch (error) {
+    console.log("Error in fetching users:", error);
+    return NextResponse.json({ error: error }, { status: 500 });
+  }
+}

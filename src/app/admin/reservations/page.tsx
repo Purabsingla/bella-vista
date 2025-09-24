@@ -3,6 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { Calendar, Search, Eye, Check, X, Edit, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ReservationModal, {
+  ReservationData,
+} from "@/components/admin/ReservationModal";
+import Toast from "@/components/Toast";
+import { auth } from "@/firebase/firebase";
 
 interface Reservation {
   id: string;
@@ -69,7 +74,27 @@ const Reservations: React.FC = () => {
   const [dateFilter, setDateFilter] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const router = useRouter();
+  const [open, setOpen] = React.useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+    isVisible: boolean;
+  }>({
+    message: "",
+    type: "success",
+    isVisible: false,
+  });
+
+  const showToast = (message: string, type: "success" | "error" | "info") => {
+    setToast({ message, type, isVisible: true });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, isVisible: false }));
+    }, 4000);
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  };
 
   useEffect(() => {
     const getReservations = async () => {
@@ -144,8 +169,46 @@ const Reservations: React.FC = () => {
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   }
 
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const HandleSubmit = async (data: ReservationData) => {
+    console.log(data);
+    const response = await fetch("/api/admin/reservations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        ...data,
+        userId: auth.currentUser?.uid,
+      }),
+    });
+    const Data = await response.json();
+    console.log(Data);
+    if (!Data.success) {
+      showToast("Failed to create reservation.", "error");
+      return;
+    }
+    showToast("Reservation created successfully!", "success");
+  };
+
   return (
     <div className="p-6 space-y-6">
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={closeToast}
+      />
+
+      {/* Modal  */}
+      <ReservationModal
+        isOpen={open}
+        onClose={handleClose}
+        onSubmit={HandleSubmit}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -156,7 +219,7 @@ const Reservations: React.FC = () => {
         </div>
         <button
           className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2"
-          onClick={() => router.push("/reservation")}
+          onClick={() => setOpen(true)}
         >
           <Calendar className="w-4 h-4" />
           New Reservation
