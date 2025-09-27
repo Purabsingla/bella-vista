@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import SplitText from "@/components/SplitText/SplitText";
+// import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
 import {
   CreditCardIcon,
@@ -13,10 +13,12 @@ import {
   TruckIcon,
   MapPinIcon,
 } from "lucide-react";
+import Image from "next/image";
+import { auth } from "@/firebase/firebase";
 
 const Checkout: React.FC = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const navigate = useRouter();
 
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -29,7 +31,7 @@ const Checkout: React.FC = () => {
     address: "",
     city: "",
     zipCode: "",
-    phone: user?.phone || "",
+    phone: "",
     instructions: "",
   });
 
@@ -75,7 +77,7 @@ const Checkout: React.FC = () => {
     }, 2000);
   };
 
-  if (!user) {
+  if (!auth?.currentUser) {
     navigate.replace("/auth");
     return null;
   }
@@ -198,10 +200,12 @@ const Checkout: React.FC = () => {
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex gap-3">
-                      <img
+                      <Image
                         src={item.image}
                         alt={item.name}
-                        className="w-12 h-12 object-cover rounded-lg"
+                        width={48}
+                        height={48}
+                        className=" object-cover rounded-lg"
                       />
                       <div className="flex-1">
                         <h4 className="text-white font-medium text-sm">

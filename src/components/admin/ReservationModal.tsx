@@ -20,6 +20,7 @@ interface Props {
   onClose: () => void;
   onSubmit: (data: ReservationData) => void;
 }
+export const today = new Date().toISOString().split("T")[0]; // format YYYY-MM-DD
 
 const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
   const { register, handleSubmit, reset, watch } = useForm<ReservationData>();
@@ -157,6 +158,7 @@ const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
               <input
                 type="date"
                 {...register("date", { required: true })}
+                min={today} //Not letting user select previous Date
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               />
             </div>
@@ -164,11 +166,40 @@ const ReservationModal: React.FC<Props> = ({ isOpen, onClose, onSubmit }) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Time *
               </label>
-              <input
-                type="time"
+              <select
                 {...register("time", { required: true })}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              />
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+              >
+                <option value="">Select time</option>
+                {[
+                  "5:00 PM",
+                  "5:30 PM",
+                  "6:00 PM",
+                  "6:30 PM",
+                  "7:00 PM",
+                  "7:30 PM",
+                  "8:00 PM",
+                  "8:30 PM",
+                  "9:00 PM",
+                  "9:30 PM",
+                  "10:00 PM",
+                ].map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+                {/* <option value="5:00 PM">5:00 PM</option>
+                <option value="5:30 PM">5:30 PM</option>
+                <option value="6:00 PM">6:00 PM</option>
+                <option value="6:30 PM">6:30 PM</option>
+                <option value="7:00 PM">7:00 PM</option>
+                <option value="7:30 PM">7:30 PM</option>
+                <option value="8:00 PM">8:00 PM</option>
+                <option value="8:30 PM">8:30 PM</option>
+                <option value="9:00 PM">9:00 PM</option>
+                <option value="9:30 PM">9:30 PM</option>
+                <option value="10:00 PM">10:00 PM</option> */}
+              </select>
             </div>
           </div>
 

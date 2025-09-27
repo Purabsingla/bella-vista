@@ -51,15 +51,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error }, { status: 500 });
   }
 }
-
-export async function PATCH(request: Request) {
-  try {
-    return NextResponse.json({ success: true, message: "reservation updated" });
-  } catch (error) {
-    console.log("Error in updating reservation:", error);
-    return NextResponse.json({
-      status: 500,
-      error: "Failed to Update Reservation",
-    });
-  }
-}

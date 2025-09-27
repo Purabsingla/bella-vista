@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Package, Clock, CheckCircle, Plus, Edit } from "lucide-react";
+import { Package, Clock, CheckCircle, Plus } from "lucide-react";
 
 interface Order {
   id: string;
@@ -10,7 +10,6 @@ interface Order {
   price: number;
   status: "cooking" | "ready" | "served";
   customerName: string;
-  orderTime: string;
   table?: number;
 }
 
@@ -22,7 +21,6 @@ const mockOrders: Order[] = [
     price: 28,
     status: "cooking",
     customerName: "John Smith",
-    orderTime: "7:30 PM",
     table: 12,
   },
   {
@@ -32,7 +30,7 @@ const mockOrders: Order[] = [
     price: 65,
     status: "ready",
     customerName: "Sarah Johnson",
-    orderTime: "7:45 PM",
+
     table: 8,
   },
   {
@@ -42,7 +40,7 @@ const mockOrders: Order[] = [
     price: 32,
     status: "served",
     customerName: "Mike Wilson",
-    orderTime: "7:15 PM",
+
     table: 5,
   },
   {
@@ -52,7 +50,7 @@ const mockOrders: Order[] = [
     price: 48,
     status: "cooking",
     customerName: "Emily Davis",
-    orderTime: "8:00 PM",
+
     table: 15,
   },
 ];
@@ -161,24 +159,6 @@ const Orders: React.FC = () => {
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
-                $
-                {orders.reduce(
-                  (sum, order) => sum + order.price * order.quantity,
-                  0
-                )}
-              </p>
-            </div>
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <Package className="w-6 h-6 text-gray-600" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Filters */}
@@ -234,9 +214,6 @@ const Orders: React.FC = () => {
                       <div className="text-sm text-gray-500">
                         Order ID: {order.id}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        Time: {order.orderTime}
-                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -286,9 +263,6 @@ const Orders: React.FC = () => {
                           Mark Served
                         </button>
                       )}
-                      <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
-                        <Edit className="w-4 h-4" />
-                      </button>
                     </div>
                   </td>
                 </tr>

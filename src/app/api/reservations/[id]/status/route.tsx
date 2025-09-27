@@ -7,8 +7,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { status } = await req.json();
+
+    console.log(id, status);
 
     if (!id || !status) {
       return NextResponse.json(

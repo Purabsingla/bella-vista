@@ -8,6 +8,12 @@ import ReservationModal, {
 import Toast from "@/components/Toast";
 import { auth } from "@/firebase/firebase";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/shadcn/tooltip";
 
 interface Reservation {
   id: string;
@@ -69,13 +75,15 @@ const mockReservations: Reservation[] = [
 const Reservations: React.FC = () => {
   const [reservations, setReservations] =
     useState<Reservation[]>(mockReservations);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [tempReservations, setTempReservations] =
+    useState<Reservation[]>(mockReservations);
+
   const [open, setOpen] = React.useState(false);
-  const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = React.useState({
+    confirm: false,
+    action: "",
+    id: "",
+  });
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info";
@@ -104,7 +112,15 @@ const Reservations: React.FC = () => {
       });
       const data = await res.json();
       console.log(data.reservations);
-      setReservations(data.reservations);
+      const FilterCancelData = data.reservations.filter(
+        (reservation: Reservation) =>
+          !["cancelled", "complete"].includes(reservation.status)
+      );
+      // const FilterCancelData = data.reservations.filter(
+      //   (reservation: Reservation) => (reservation.status !== "cancelled" && reservation.status !== "completed")
+      // );
+      setReservations(FilterCancelData);
+      setTempReservations(FilterCancelData);
     };
     getReservations();
   }, []);
@@ -122,35 +138,50 @@ const Reservations: React.FC = () => {
     }
   };
 
-  const updateReservationStatus = (
-    id: string,
-    newStatus: "approved" | "cancelled"
-  ) => {
-    setReservations((prev) =>
-      prev.map((res) => (res.id === id ? { ...res, status: newStatus } : res))
-    );
+  // Filtering Data
+  // Handle Search Change
+  const HandleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchTerm = e.target.value.toLowerCase();
+
+    if (searchTerm.length === 0) {
+      // Reset → show original data
+      setReservations(tempReservations);
+    } else {
+      const filteredSearchData = tempReservations.filter(
+        (reservation) =>
+          reservation.name?.toLowerCase().includes(searchTerm) ||
+          reservation.email?.toLowerCase().includes(searchTerm)
+      );
+
+      setReservations(filteredSearchData);
+    }
   };
 
-  // Filtering Reservation
-  const filteredReservations = reservations.filter((reservation) => {
-    const name = reservation.name?.toLowerCase() || "";
-    const email = reservation.email?.toLowerCase() || "";
+  // Handle Status Change
+  const HandleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const SelectTerm = e.target.value.toLowerCase();
+    if (SelectTerm === "all") {
+      setReservations(tempReservations);
+    } else {
+      const FilteredSelectData = reservations.filter(
+        (reservation) =>
+          reservation.status === SelectTerm || SelectTerm === "all"
+      );
+      setReservations(FilteredSelectData);
+    }
+  };
 
-    const matchesSearch =
-      !searchTerm ||
-      name.includes(searchTerm.toLowerCase()) ||
-      email.includes(searchTerm.toLowerCase());
-
-    const matchesStatus =
-      reservation.status === statusFilter || statusFilter === "all";
-    console.log("Reservation Status:", matchesStatus);
-    // const matchesDate = !dateFilter || reservation.date === dateFilter;
-    const matchesDate =
-      !dateFilter ||
-      new Date(reservation.date).toISOString().split("T")[0] === dateFilter;
-    console.log("Reservation Date:", matchesDate);
-    return matchesSearch && matchesStatus && matchesDate;
-  });
+  // Handle Date Change
+  const HandleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const FilteredDateData = reservations.filter((reservation) => {
+      const SelectedDate = e.target.value;
+      const matchesDate =
+        !SelectedDate ||
+        new Date(reservation.date).toISOString().split("T")[0] === SelectedDate;
+      return matchesDate;
+    });
+    setReservations(FilteredDateData as unknown as Reservation[]);
+  };
 
   // const filteredReservations = reservations.filter((reservation) => {
   //   // const matchesSearch =
@@ -193,6 +224,25 @@ const Reservations: React.FC = () => {
     showToast("Reservation created successfully!", "success");
   };
 
+  // Confirm Dialog Action
+  const handleDialogAction = async () => {
+    console.log("Confirmed action");
+    const response = await fetch(
+      `/api/reservations/${confirmDialogOpen.id}/status`,
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          status:
+            confirmDialogOpen.action === "confirm" ? "approved" : "cancelled",
+        }),
+      }
+    );
+    const Data = await response.json();
+    if (Data.success) showToast("Reservation status updated!", "success");
+    else showToast("Failed to update reservation.", "error");
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Toast Notification */}
@@ -212,11 +262,11 @@ const Reservations: React.FC = () => {
 
       {/* Confirmation Modal or Dialog */}
       <ConfirmDialog
-        isOpen={confirmDialogOpen}
-        onClose={() => setConfirmDialogOpen(false)}
-        onConfirm={() => {
-          console.log("Confirmed action");
-        }}
+        isOpen={confirmDialogOpen.confirm}
+        onClose={() =>
+          setConfirmDialogOpen({ confirm: false, action: "", id: "" })
+        }
+        onConfirm={handleDialogAction}
       />
 
       {/* Header */}
@@ -244,30 +294,26 @@ const Reservations: React.FC = () => {
             <input
               type="text"
               placeholder="Search reservations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={HandleSearchChange}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={HandleSelectChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
-              <option value="cancelled">Cancelled</option>
             </select>
           </div>
 
           <div>
             <input
               type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
+              onChange={HandleDateChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
@@ -301,7 +347,7 @@ const Reservations: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredReservations.map((reservation) => (
+              {reservations.map((reservation) => (
                 <tr
                   key={reservation.id}
                   className="hover:bg-gray-50 transition-colors"
@@ -355,26 +401,58 @@ const Reservations: React.FC = () => {
                       <button className="text-blue-600 hover:text-blue-900 p-1 rounded">
                         <Eye className="w-4 h-4" />
                       </button>
-                      {reservation.status === "pending" && (
-                        <>
-                          <button
-                            onClick={() => {
-                              setConfirmDialogOpen(true);
-                            }}
-                            className="text-green-600 hover:text-green-900 p-1 rounded"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setConfirmDialogOpen(true);
-                            }}
-                            className="text-red-600 hover:text-red-900 p-1 rounded"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
+                      {reservation.status === "pending" ||
+                        (reservation.status === "approved" && (
+                          <>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={() => {
+                                      setConfirmDialogOpen({
+                                        confirm: true,
+                                        action:
+                                          reservation.status === "approved"
+                                            ? "complete"
+                                            : "confirm",
+                                        id: reservation.id,
+                                      });
+                                    }}
+                                    className="text-green-600 hover:text-green-900 p-1 rounded"
+                                  >
+                                    <Check className="w-4 h-4" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    {reservation.status === "approved"
+                                      ? "Complete"
+                                      : "Approval"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={() => {
+                                      setConfirmDialogOpen({
+                                        confirm: true,
+                                        action: "Cancel",
+                                        id: reservation.id,
+                                      });
+                                    }}
+                                    className="text-red-600 hover:text-red-900 p-1 rounded"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Cancel</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </>
+                        ))}
                       <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
                         <Edit className="w-4 h-4" />
                       </button>
