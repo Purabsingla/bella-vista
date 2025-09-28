@@ -3,8 +3,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
-// import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
 import {
   CreditCardIcon,
@@ -18,7 +16,6 @@ import { auth } from "@/firebase/firebase";
 
 const Checkout: React.FC = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
-  // const { user } = useAuth();
   const navigate = useRouter();
 
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -62,7 +59,7 @@ const Checkout: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-
+    console.log(auth?.currentUser);
     // Simulate payment processing
     await new Promise((resolve) => setTimeout(resolve, 3000));
 

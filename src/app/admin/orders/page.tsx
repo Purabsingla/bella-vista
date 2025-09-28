@@ -5,53 +5,30 @@ import { Package, Clock, CheckCircle, Plus } from "lucide-react";
 
 interface Order {
   id: string;
-  dishName: string;
-  quantity: number;
-  price: number;
   status: "cooking" | "ready" | "served";
   customerName: string;
   table?: number;
+  items: { name: string; qty: number; price: number }[];
 }
 
 const mockOrders: Order[] = [
   {
     id: "ORD001",
-    dishName: "Truffle Risotto",
-    quantity: 2,
-    price: 28,
-    status: "cooking",
     customerName: "John Smith",
     table: 12,
+    status: "cooking",
+    items: [
+      { name: "Truffle Risotto", qty: 2, price: 28 },
+      { name: "Garlic Bread", qty: 1, price: 6 },
+      { name: "Coke", qty: 2, price: 3 },
+    ],
   },
   {
     id: "ORD002",
-    dishName: "Wagyu Beef Tenderloin",
-    quantity: 1,
-    price: 65,
-    status: "ready",
     customerName: "Sarah Johnson",
-
     table: 8,
-  },
-  {
-    id: "ORD003",
-    dishName: "Pan-Seared Salmon",
-    quantity: 3,
-    price: 32,
-    status: "served",
-    customerName: "Mike Wilson",
-
-    table: 5,
-  },
-  {
-    id: "ORD004",
-    dishName: "Lobster Thermidor",
-    quantity: 1,
-    price: 48,
-    status: "cooking",
-    customerName: "Emily Davis",
-
-    table: 15,
+    status: "ready",
+    items: [{ name: "Wagyu Beef Tenderloin", qty: 1, price: 65 }],
   },
 ];
 
@@ -206,16 +183,23 @@ const Orders: React.FC = () => {
                   key={order.id}
                   className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {order.dishName}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Order ID: {order.id}
-                      </div>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 font-medium mb-1">
+                      Order ID: {order.id}
                     </div>
+                    <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                      {order.items.map((item, idx) => (
+                        <li key={idx}>
+                          {item.name}{" "}
+                          <span className="text-gray-500">x{item.qty}</span>
+                          <span className="ml-2 font-semibold">
+                            ${item.price * item.qty}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </td>
+
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm text-gray-900">
@@ -228,12 +212,18 @@ const Orders: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      Qty: {order.quantity}
+                      Qty:{" "}
+                      {order.items.reduce((sum, item) => sum + item.qty, 0)}{" "}
                     </div>
                     <div className="text-sm font-semibold text-gray-900">
-                      ${order.price * order.quantity}
+                      $
+                      {order.items.reduce(
+                        (sum, item) => sum + item.price * item.qty,
+                        0
+                      )}
                     </div>
                   </td>
+
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
