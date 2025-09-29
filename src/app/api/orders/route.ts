@@ -15,22 +15,31 @@ const generateDailyOrderID = async () => {
   const q = query(collection(db, "orders"), where("date", "==", today));
   const snapshots = await getDocs(q);
   const orderCount = snapshots.empty ? 1 : snapshots.size + 1;
-  const orderPadValue = orderCount > 99 ? 3 : orderCount > 9 ? 4 : 5;
-  return `ORD${String(orderCount).padEnd(orderPadValue, "0")}`;
+  const orderPadValue = orderCount > 99 ? 1 : orderCount > 9 ? 2 : 3;
+  return `ORD${String(orderCount).padStart(orderPadValue, "0")}`;
 };
 
 export const POST = async (request: Request) => {
   try {
     const reqData = await request.json();
-    const { userId, customerName, items } = reqData;
-    const today = new Date().toISOString().split("T")[0];
-
-    const docRef = await addDoc(collection(db, "orders"), {
+    const {
       userId,
-      orderId: generateDailyOrderID() || "ORD001",
       customerName,
       items,
-      orderType: "online",
+      orderType = "online",
+      email,
+      deliveryInfo,
+    } = reqData;
+    const today = new Date().toISOString().split("T")[0];
+    console.log(reqData, await generateDailyOrderID());
+    const docRef = await addDoc(collection(db, "orders"), {
+      userId,
+      customerName,
+      email,
+      items,
+      orderType,
+      deliveryInfo,
+      orderId: await generateDailyOrderID(),
       date: today,
       createdAt: serverTimestamp(),
       status: "pending", //initial status

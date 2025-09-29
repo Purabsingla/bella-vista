@@ -22,7 +22,6 @@ const Checkout: React.FC = () => {
   const [deliveryMethod, setDeliveryMethod] = useState("delivery");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [orderNumber, setOrderNumber] = useState("");
 
   const [deliveryInfo, setDeliveryInfo] = useState({
     address: "",
@@ -59,12 +58,25 @@ const Checkout: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    console.log(auth?.currentUser);
+    console.log("Form Event values", deliveryInfo);
+    console.log("Items :->", cartItems);
+    const userName = auth.currentUser?.displayName;
+    const Mail = auth.currentUser?.email;
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        userId: auth.currentUser?.uid,
+        customerName: userName,
+        email: Mail,
+        items: cartItems,
+        deliveryInfo,
+      }),
+    });
+
     // Simulate payment processing
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    const orderNum = `BV${Date.now().toString().slice(-6)}`;
-    setOrderNumber(orderNum);
     setIsProcessing(false);
     setIsCompleted(true);
 
@@ -132,9 +144,6 @@ const Checkout: React.FC = () => {
                 Order Details
               </h3>
               <div className="text-gray-300 space-y-2">
-                <p>
-                  <strong>Order Number:</strong> #{orderNumber}
-                </p>
                 <p>
                   <strong>Total Amount:</strong> ${finalTotal.toFixed(2)}
                 </p>
