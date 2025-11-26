@@ -1,7 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  Clock,
+  Star,
+  Flame,
+} from "lucide-react";
+import { Playfair_Display, Manrope } from "next/font/google";
+import Image from "next/image";
+
+const playfair = Playfair_Display({ subsets: ["latin"] });
+const manrope = Manrope({ subsets: ["latin"] });
 
 export interface CarouselItem {
   id: number;
@@ -27,10 +39,10 @@ export interface CarouselProps {
 
 const Carousel: React.FC<CarouselProps> = ({
   items,
-  baseWidth = 800,
-  autoplay = false,
-  autoplayDelay = 3000,
-  pauseOnHover = false,
+  baseWidth = 1000, // Default increased to 1000px
+  autoplay = true,
+  autoplayDelay = 5000,
+  pauseOnHover = true,
   loop = true,
   onAddToCart,
 }) => {
@@ -40,112 +52,133 @@ const Carousel: React.FC<CarouselProps> = ({
   useEffect(() => {
     if (autoplay && !isHovered) {
       const interval = setInterval(() => {
-        setCurrentIndex((prev) =>
-          loop
-            ? (prev + 1) % items.length
-            : Math.min(prev + 1, items.length - 1)
-        );
+        handleNext();
       }, autoplayDelay);
-
       return () => clearInterval(interval);
     }
-  }, [autoplay, autoplayDelay, isHovered, loop, items.length]);
+  }, [autoplay, autoplayDelay, isHovered, currentIndex]);
 
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
+  const handleNext = () => {
+    setCurrentIndex((prev) => {
+      if (prev === items.length - 1) return loop ? 0 : prev;
+      return prev + 1;
+    });
   };
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) =>
-      loop ? (prev - 1 + items.length) % items.length : Math.max(prev - 1, 0)
-    );
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) =>
-      loop ? (prev + 1) % items.length : Math.min(prev + 1, items.length - 1)
-    );
+  const handlePrev = () => {
+    setCurrentIndex((prev) => {
+      if (prev === 0) return loop ? items.length - 1 : prev;
+      return prev - 1;
+    });
   };
 
   const handleAddToCart = (item: CarouselItem) => {
-    if (onAddToCart) {
-      onAddToCart(item);
-    }
+    if (onAddToCart) onAddToCart(item);
   };
 
   return (
+    // Updated container styles: increased minHeight to 550px for a taller, grander look
     <div
-      className="relative overflow-hidden rounded-3xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl"
-      style={{ width: `${baseWidth}px`, height: "400px" }}
+      className="relative group w-full mx-auto bg-stone-900 border border-stone-800 shadow-2xl overflow-hidden rounded-sm"
+      style={{ maxWidth: `${baseWidth}px`, minHeight: "550px" }}
       onMouseEnter={() => pauseOnHover && setIsHovered(true)}
       onMouseLeave={() => pauseOnHover && setIsHovered(false)}
     >
-      {/* Main Carousel Content */}
-      <div className="relative h-full">
+      {/* --- CAROUSEL TRACK --- */}
+      <div className="relative h-full w-full min-h-[550px]">
         <div
-          className="flex h-full transition-transform duration-500 ease-in-out"
+          className="flex h-full min-h-[550px] transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {items.map((item, index) => (
-            <div key={item.id} className="w-full h-full flex-shrink-0 relative">
-              <div className="grid grid-cols-2 h-full">
-                {/* Image Side */}
-                <div className="relative overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
+            <div
+              key={item.id}
+              className="w-full shrink-0 flex flex-col md:flex-row h-full relative min-h-[550px]"
+            >
+              {/* --- IMAGE SECTION (Left/Top) --- */}
+              <div className="relative w-full md:w-[55%] h-72 md:h-auto overflow-hidden bg-stone-950">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  fill
+                  className={`object-cover transition-transform duration-[2000ms] ease-out ${
+                    index === currentIndex ? "scale-110" : "scale-100"
+                  }`}
+                  priority={index === 0}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent md:hidden opacity-90" />
+              </div>
 
-                  {/* Rating Badge */}
-                  <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                    ⭐ {item.rating}
+              {/* --- CONTENT SECTION (Right/Bottom) --- */}
+              <div className="relative w-full md:w-[45%] bg-stone-950 p-8 md:p-12 flex flex-col justify-center border-l border-stone-800/50">
+                {/* Top Meta Tags */}
+                <div className="flex justify-between items-center mb-8">
+                  <div className="hidden md:flex items-center gap-3 text-amber-500">
+                    <div className="p-2.5 bg-amber-500/10 rounded-full">
+                      {item.icon || <Flame className="w-5 h-5" />}
+                    </div>
+                    <span
+                      className={`${manrope.className} text-sm font-bold uppercase tracking-widest`}
+                    >
+                      Chef&apos;s Selection
+                    </span>
                   </div>
 
-                  {/* Time Badge */}
-                  <div className="absolute top-4 right-4 bg-amber-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    🕒 {item.time}
+                  {/* Rating & Time */}
+                  <div className="flex items-center gap-4 ml-auto">
+                    <div className="flex items-center gap-2 text-stone-400 text-xs font-medium bg-stone-900 px-3 py-1.5 rounded-sm border border-stone-800">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{item.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-amber-400 text-xs font-bold bg-amber-950/30 px-3 py-1.5 rounded-sm border border-amber-500/20">
+                      <Star className="w-3.5 h-3.5 fill-current" />
+                      <span>{item.rating}</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Content Side */}
-                <div className="p-8 flex flex-col justify-between bg-gradient-to-br from-gray-900/90 to-gray-800/90">
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
-                        {item.icon}
-                      </div>
-                      <span className="text-amber-400 font-semibold text-sm">
-                        Chef&apos;s Special
-                      </span>
-                    </div>
+                {/* Title & Description */}
+                <div className="mb-10 relative z-10">
+                  <h2
+                    className={`${playfair.className} text-4xl md:text-5xl text-white mb-6 leading-tight`}
+                  >
+                    {item.name}
+                  </h2>
+                  <p
+                    className={`${manrope.className} text-stone-400 text-base leading-relaxed line-clamp-4 font-light`}
+                  >
+                    {item.description}
+                  </p>
+                </div>
 
-                    <h3 className="text-3xl font-bold text-white mb-4">
-                      {item.name}
-                    </h3>
-                    <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                      {item.description}
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-4xl font-bold text-amber-400">
-                        {item.price}
-                      </span>
-                      <div className="flex items-center gap-2 text-gray-400">
-                        <span className="text-sm">Serves 1-2</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleAddToCart(item)}
-                      className="interactive w-full bg-gradient-to-r from-amber-600 to-amber-500 text-white py-3 px-6 rounded-xl font-semibold text-lg hover:from-amber-500 hover:to-amber-400 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                {/* Bottom Action Area */}
+                <div className="mt-auto pt-8 border-t border-stone-800 flex items-center justify-between gap-6">
+                  <div className="flex flex-col">
+                    <span
+                      className={`${manrope.className} text-stone-500 text-[11px] uppercase tracking-widest font-bold mb-1`}
                     >
-                      🛒 Add to Cart
-                    </button>
+                      Price
+                    </span>
+                    <span
+                      className={`${playfair.className} text-4xl text-amber-500`}
+                    >
+                      {item.price}
+                    </span>
                   </div>
+
+                  <button
+                    onClick={() => handleAddToCart(item)}
+                    className="group relative flex-1 max-w-[200px] bg-white text-stone-950 hover:bg-amber-500 hover:text-white transition-all duration-300 py-4 px-6 overflow-hidden rounded-sm shadow-lg hover:shadow-amber-500/20"
+                  >
+                    <div className="relative z-10 flex items-center justify-center gap-3">
+                      <span
+                        className={`${manrope.className} text-sm font-bold uppercase tracking-widest`}
+                      >
+                        Order
+                      </span>
+                      <ShoppingCart className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -153,34 +186,28 @@ const Carousel: React.FC<CarouselProps> = ({
         </div>
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={goToPrevious}
-        className="interactive absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 backdrop-blur-lg text-white p-3 rounded-full hover:bg-black/70 transition-all duration-300 z-10"
-      >
-        <ChevronLeftIcon className="w-6 h-6" />
-      </button>
+      {/* --- CONTROLS --- */}
+      <div className="hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button
+          onClick={handlePrev}
+          className="absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-stone-950/80 text-stone-400 border border-stone-800 hover:text-white hover:border-amber-500 hover:bg-stone-900 transition-all z-20 rounded-full"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={handleNext}
+          className="absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-stone-950/80 text-stone-400 border border-stone-800 hover:text-white hover:border-amber-500 hover:bg-stone-900 transition-all z-20 rounded-full"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
 
-      <button
-        onClick={goToNext}
-        className="interactive absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 backdrop-blur-lg text-white p-3 rounded-full hover:bg-black/70 transition-all duration-300 z-10"
-      >
-        <ChevronRightIcon className="w-6 h-6" />
-      </button>
-
-      {/* Dots Indicator */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {items.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`interactive w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentIndex
-                ? "bg-amber-400 scale-125"
-                : "bg-white/50 hover:bg-white/70"
-            }`}
-          />
-        ))}
+      {/* Progress Bar */}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-stone-800 z-30">
+        <div
+          className="h-full bg-amber-500 transition-all duration-500 ease-out"
+          style={{ width: `${((currentIndex + 1) / items.length) * 100}%` }}
+        />
       </div>
     </div>
   );

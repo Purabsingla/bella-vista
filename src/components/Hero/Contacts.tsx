@@ -3,7 +3,7 @@ import FadeContent from "@/components/FadeContent";
 import SplitText from "../SplitText/SplitText";
 import { Clock, MapPin, Phone, LucideIcon } from "lucide-react";
 
-interface ContactProps {
+export interface ContactProps {
   icon: React.ReactElement<LucideIcon>;
   title: string;
   line1: string;

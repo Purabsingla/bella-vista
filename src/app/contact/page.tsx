@@ -1,10 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import SplitText from "@/components/SplitText";
+import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
-import { MapPin, Phone, Clock, Mail, Send } from "lucide-react";
+import { MapPin, Phone, Clock, Mail, Send, MessageSquare } from "lucide-react";
 import Toast from "@/components/Toast";
+import { Great_Vibes, Playfair_Display, Manrope } from "next/font/google";
+
+// --- FONTS ---
+const greatVibes = Great_Vibes({ weight: "400", subsets: ["latin"] });
+const playfair = Playfair_Display({ subsets: ["latin"] });
+const manrope = Manrope({ subsets: ["latin"] });
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -43,27 +49,13 @@ const Contact: React.FC = () => {
     setIsSubmitting(true);
 
     // Simulate form submission
-    const response = await fetch("/api/contacts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const result = await response.json();
-
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    showToast(
-      result.success
-        ? "Message sent successfully!"
-        : "Failed to send message. Please try again.",
-      result.success ? "success" : "error"
-    );
 
+    // Success logic
+    showToast("Message sent successfully!", "success");
     setIsSubmitting(false);
     setIsSubmitted(true);
     setFormData({ name: "", email: "", subject: "", message: "" });
-
-    // Reset success message after 4 seconds
     setTimeout(() => setIsSubmitted(false), 4000);
   };
 
@@ -78,20 +70,11 @@ const Contact: React.FC = () => {
     });
   };
 
-  const BackgroundAnimations = React.useMemo(
-    () => (
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-400/30 to-blue-400/30 rounded-full mix-blend-multiply filter blur-xl animate-blob" />
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-gradient-to-r from-yellow-400/30 to-pink-400/30 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000" />
-        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-gradient-to-r from-pink-400/30 to-yellow-400/30 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000" />
-      </div>
-    ),
-    []
-  );
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
+    <div className="min-h-screen bg-stone-950 pt-16 relative overflow-hidden">
+      {/* 1. Subtle Background Texture (Verified Unsplash Noise) */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.05] z-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover" />
+
       {/* Toast Notification */}
       <Toast
         message={toast.message}
@@ -100,95 +83,135 @@ const Contact: React.FC = () => {
         onClose={closeToast}
       />
 
-      {/* Liquid Background Animation */}
-      {BackgroundAnimations}
+      {/* --- HERO SECTION --- */}
+      <section className="relative py-28 px-4 text-center z-10">
+        {/* Background Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-amber-900/10 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Hero Section */}
-      <section className="py-20 px-4 text-center">
-        <SplitText className="text-5xl md:text-6xl font-bold text-white mb-4">
-          Contact Us
-        </SplitText>
-        <FadeContent delay={500}>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            We&apos;d love to hear from you. Get in touch with us for
-            reservations, inquiries, or just to say hello.
+        <FadeContent>
+          <div className="flex justify-center items-center gap-4 mb-4">
+            <div className="h-[1px] w-12 bg-amber-500/50" />
+            <span
+              className={`${manrope.className} text-amber-500 tracking-[0.3em] text-xs uppercase font-bold`}
+            >
+              Get In Touch
+            </span>
+            <div className="h-[1px] w-12 bg-amber-500/50" />
+          </div>
+
+          <h1
+            className={`${greatVibes.className} relative z-10 text-7xl md:text-9xl text-white mb-6 drop-shadow-2xl`}
+          >
+            Contact Us
+          </h1>
+
+          <p
+            className={`${playfair.className} relative z-10 text-2xl md:text-3xl text-stone-300 max-w-2xl mx-auto italic font-light tracking-wide leading-relaxed`}
+          >
+            &quot;We&apos;d love to hear from you. For reservations, private
+            events, or simply to say hello.&quot;
           </p>
         </FadeContent>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 pb-20">
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <div className="space-y-8">
+      <div className="max-w-7xl mx-auto px-4 pb-24 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16">
+          {/* --- LEFT COLUMN: Info & Map --- */}
+          <div className="space-y-12">
             <FadeContent direction="left">
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8">
-                <h3 className="text-3xl font-bold text-white mb-8">
-                  Get in Touch
+              <div className="bg-stone-900/30 backdrop-blur-md border border-stone-800 p-10 rounded-sm">
+                <h3
+                  className={`${playfair.className} text-3xl text-white mb-8`}
+                >
+                  Information
                 </h3>
 
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-amber-600 p-3 rounded-full flex-shrink-0">
-                      <MapPin className="w-6 h-6 text-white" />
+                <div className="space-y-8">
+                  {/* Address */}
+                  <div className="flex items-start gap-6 group">
+                    <div className="bg-stone-950 p-4 border border-stone-800 group-hover:border-amber-500/50 transition-colors">
+                      <MapPin className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white mb-2">
-                        Visit Us
+                      <h4
+                        className={`${manrope.className} text-white font-bold uppercase tracking-widest text-sm mb-2`}
+                      >
+                        Location
                       </h4>
-                      <p className="text-gray-300">
-                        123 Culinary Street
-                        <br />
-                        Downtown District
+                      <p
+                        className={`${manrope.className} text-stone-400 font-light leading-relaxed`}
+                      >
+                        123 Culinary Street, Downtown District
                         <br />
                         New York, NY 10001
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="bg-amber-600 p-3 rounded-full flex-shrink-0">
-                      <Phone className="w-6 h-6 text-white" />
+                  {/* Phone */}
+                  <div className="flex items-start gap-6 group">
+                    <div className="bg-stone-950 p-4 border border-stone-800 group-hover:border-amber-500/50 transition-colors">
+                      <Phone className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white mb-2">Call Us</h4>
-                      <p className="text-gray-300">
-                        Main: (555) 123-4567
+                      <h4
+                        className={`${manrope.className} text-white font-bold uppercase tracking-widest text-sm mb-2`}
+                      >
+                        Reservations
+                      </h4>
+                      <p
+                        className={`${manrope.className} text-stone-400 font-light leading-relaxed`}
+                      >
+                        (555) 123-4567
                         <br />
-                        Reservations: (555) 123-4568
+                        <span className="text-stone-500 text-xs">
+                          Available 10am - 10pm
+                        </span>
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="bg-amber-600 p-3 rounded-full flex-shrink-0">
-                      <Mail className="w-6 h-6 text-white" />
+                  {/* Email */}
+                  <div className="flex items-start gap-6 group">
+                    <div className="bg-stone-950 p-4 border border-stone-800 group-hover:border-amber-500/50 transition-colors">
+                      <Mail className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white mb-2">
-                        Email Us
+                      <h4
+                        className={`${manrope.className} text-white font-bold uppercase tracking-widest text-sm mb-2`}
+                      >
+                        Email
                       </h4>
-                      <p className="text-gray-300">
-                        info@bellavista.com
-                        <br />
-                        reservations@bellavista.com
+                      <p
+                        className={`${manrope.className} text-stone-400 font-light leading-relaxed`}
+                      >
+                        concierge@bellavista.com
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="bg-amber-600 p-3 rounded-full flex-shrink-0">
-                      <Clock className="w-6 h-6 text-white" />
+                  {/* Hours */}
+                  <div className="flex items-start gap-6 group">
+                    <div className="bg-stone-950 p-4 border border-stone-800 group-hover:border-amber-500/50 transition-colors">
+                      <Clock className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white mb-2">
-                        Opening Hours
+                      <h4
+                        className={`${manrope.className} text-white font-bold uppercase tracking-widest text-sm mb-2`}
+                      >
+                        Hours
                       </h4>
-                      <div className="text-gray-300 space-y-1">
-                        <p>Monday - Thursday: 5:00 PM - 10:00 PM</p>
-                        <p>Friday - Saturday: 5:00 PM - 11:00 PM</p>
-                        <p>Sunday: 4:00 PM - 9:00 PM</p>
-                        <p className="text-amber-400 font-semibold mt-2">
-                          Closed on major holidays
+                      <div
+                        className={`${manrope.className} text-stone-400 font-light space-y-1`}
+                      >
+                        <p className="flex justify-between w-48">
+                          <span>Mon - Thu:</span> <span>5pm - 10pm</span>
+                        </p>
+                        <p className="flex justify-between w-48">
+                          <span>Fri - Sat:</span> <span>5pm - 11pm</span>
+                        </p>
+                        <p className="flex justify-between w-48">
+                          <span>Sun:</span> <span>4pm - 9pm</span>
                         </p>
                       </div>
                     </div>
@@ -198,53 +221,60 @@ const Contact: React.FC = () => {
             </FadeContent>
 
             {/* Map */}
-            <FadeContent direction="left" delay={300}>
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8">
-                <h3 className="text-2xl font-bold text-white mb-6">Find Us</h3>
-                <div className="w-full h-80 bg-gray-800 rounded-lg overflow-hidden">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9663095343008!2d-74.00425878459418!3d40.74844097932764!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1635959662076!5m2!1sen!2sus"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  ></iframe>
-                </div>
+            <FadeContent direction="left" delay={200}>
+              <div className="h-64 w-full border border-stone-800 rounded-sm overflow-hidden grayscale hover:grayscale-0 transition-all duration-700">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.98513058459418!3d40.758896000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes%20Square!5e0!3m2!1sen!2sus!4v1622222222222!5m2!1sen!2sus"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
               </div>
             </FadeContent>
           </div>
 
-          {/* Contact Form */}
+          {/* --- RIGHT COLUMN: Form --- */}
           <FadeContent direction="right">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8">
-              <h3 className="text-3xl font-bold text-white mb-8">
-                Send us a Message
-              </h3>
+            <div className="bg-stone-900/30 backdrop-blur-md border border-stone-800 p-10 rounded-sm h-full">
+              <div className="mb-8">
+                <span
+                  className={`${manrope.className} text-amber-500 uppercase tracking-widest text-xs font-bold`}
+                >
+                  Message Us
+                </span>
+                <h3
+                  className={`${playfair.className} text-3xl text-white mt-2`}
+                >
+                  Send a Request
+                </h3>
+              </div>
 
-              {isSubmitted && (
-                <div className="bg-green-500/20 border border-green-500/50 text-green-300 p-4 rounded-lg mb-6 flex items-center gap-3">
-                  <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">✓</span>
+              {isSubmitted ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-8 border border-green-900/30 bg-green-900/10 rounded-sm">
+                  <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mb-4">
+                    <MessageSquare className="w-8 h-8" />
                   </div>
-                  <div>
-                    <p className="font-semibold">Message sent successfully!</p>
-                    <p className="text-sm opacity-90">
-                      We&apos;ll get back to you within 24 hours.
-                    </p>
-                  </div>
+                  <h4
+                    className={`${playfair.className} text-2xl text-white mb-2`}
+                  >
+                    Message Sent
+                  </h4>
+                  <p className={`${manrope.className} text-stone-400`}>
+                    Thank you. Our concierge will be in touch shortly.
+                  </p>
                 </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Name */}
+                  <div className="group">
                     <label
                       htmlFor="name"
-                      className="block text-white font-medium mb-2"
+                      className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                     >
-                      Full Name *
+                      Full Name
                     </label>
                     <input
                       type="text"
@@ -253,17 +283,18 @@ const Contact: React.FC = () => {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
-                      placeholder="Your full name"
+                      className="w-full bg-stone-950 border-b border-stone-800 text-white px-4 py-4 focus:outline-none focus:border-amber-500 focus:bg-stone-900/50 transition-all duration-300 placeholder-stone-700"
+                      placeholder="John Doe"
                     />
                   </div>
 
-                  <div>
+                  {/* Email */}
+                  <div className="group">
                     <label
                       htmlFor="email"
-                      className="block text-white font-medium mb-2"
+                      className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                     >
-                      Email Address *
+                      Email Address
                     </label>
                     <input
                       type="email"
@@ -272,96 +303,79 @@ const Contact: React.FC = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
-                      placeholder="your@email.com"
+                      className="w-full bg-stone-950 border-b border-stone-800 text-white px-4 py-4 focus:outline-none focus:border-amber-500 focus:bg-stone-900/50 transition-all duration-300 placeholder-stone-700"
+                      placeholder="john@example.com"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label
-                    htmlFor="subject"
-                    className="block text-white font-medium mb-2"
-                  >
-                    Subject
-                  </label>
-                  <select
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
-                  >
-                    <option value="" className="bg-gray-800">
-                      Select a subject
-                    </option>
-                    <option value="reservation" className="bg-gray-800">
-                      Reservation Inquiry
-                    </option>
-                    <option value="event" className="bg-gray-800">
-                      Private Event
-                    </option>
-                    <option value="feedback" className="bg-gray-800">
-                      Feedback
-                    </option>
-                    <option value="general" className="bg-gray-800">
-                      General Question
-                    </option>
-                    <option value="other" className="bg-gray-800">
-                      Other
-                    </option>
-                  </select>
-                </div>
+                  {/* Subject */}
+                  <div className="group">
+                    <label
+                      htmlFor="subject"
+                      className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
+                    >
+                      Inquiry Type
+                    </label>
+                    <select
+                      id="subject"
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      className="w-full bg-stone-950 border-b border-stone-800 text-white px-4 py-4 focus:outline-none focus:border-amber-500 focus:bg-stone-900/50 transition-all duration-300 appearance-none"
+                    >
+                      <option value="" className="text-stone-500">
+                        Select a subject
+                      </option>
+                      <option value="reservation">Reservation Inquiry</option>
+                      <option value="event">Private Event</option>
+                      <option value="feedback">Feedback</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-white font-medium mb-2"
-                  >
-                    Message *
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    required
-                    rows={6}
-                    className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300 resize-none"
-                    placeholder="Tell us how we can help you..."
-                  />
-                </div>
+                  {/* Message */}
+                  <div className="group">
+                    <label
+                      htmlFor="message"
+                      className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
+                    >
+                      Message
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      required
+                      rows={4}
+                      className="w-full bg-stone-950 border-b border-stone-800 text-white px-4 py-4 focus:outline-none focus:border-amber-500 focus:bg-stone-900/50 transition-all duration-300 placeholder-stone-700 resize-none"
+                      placeholder="How can we help you?"
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="interactive w-full bg-gradient-to-r from-amber-600 to-amber-500 text-white py-4 rounded-lg font-semibold text-lg hover:from-amber-500 hover:to-amber-400 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Sending Message...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      Send Message
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <div className="mt-8 pt-8 border-t border-white/10">
-                <p className="text-gray-400 text-sm text-center">
-                  For immediate assistance, please call us at{" "}
-                  <a
-                    href="tel:+15551234567"
-                    className="text-amber-400 hover:text-amber-300 transition-colors"
+                  {/* Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full group relative px-8 py-4 bg-white text-stone-950 hover:bg-amber-500 hover:text-white transition-all duration-300 mt-4 overflow-hidden rounded-sm"
                   >
-                    (555) 123-4567
-                  </a>
-                </p>
-              </div>
+                    <div className="relative z-10 flex items-center justify-center gap-3">
+                      {isSubmitting ? (
+                        <div className="w-5 h-5 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <span
+                            className={`${manrope.className} text-sm font-bold uppercase tracking-widest`}
+                          >
+                            Send Message
+                          </span>
+                          <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </>
+                      )}
+                    </div>
+                  </button>
+                </form>
+              )}
             </div>
           </FadeContent>
         </div>

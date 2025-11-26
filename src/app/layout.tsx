@@ -14,6 +14,7 @@ import RouteChangeLoader from "@/components/RouteChangeLoader";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/firebase/firebase";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,19 +57,7 @@ export default function RootLayout({
               <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 cursor-none">
                 <Cart />
                 {children}
-                {!conditionalNavBar && (
-                  <footer className="bg-black/50 backdrop-blur-lg text-white py-8 px-4">
-                    <div className="max-w-6xl mx-auto text-center">
-                      <h3 className="text-2xl font-bold mb-2">Bella Vista</h3>
-                      <p className="text-gray-400 mb-4">
-                        Fine dining experience since 1995
-                      </p>
-                      <p className="text-gray-500 text-sm">
-                        © 2025 Bella Vista Restaurant. All rights reserved.
-                      </p>
-                    </div>
-                  </footer>
-                )}
+                {!conditionalNavBar && <Footer />}
               </div>
             </AuthProvider>
           </CartProvider>
