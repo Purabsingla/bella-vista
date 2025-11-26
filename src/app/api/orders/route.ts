@@ -55,3 +55,27 @@ export const POST = async (request: Request) => {
     });
   }
 };
+
+export const GET = async () => {
+  try {
+    const q = query(collection(db, "orders"));
+    const snapshots = await getDocs(q);
+    const orders = snapshots.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json({
+      success: true,
+      status: 200,
+      data: orders,
+    });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({
+      message: "Error in Server",
+      status: 500,
+      success: false,
+    });
+  }
+};

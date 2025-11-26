@@ -1,4 +1,3 @@
-import Aurora from "@/components/Aurora";
 import Hero from "@/components/Hero/Hero";
 import Features from "@/components/Hero/Features";
 import Stats from "@/components/Hero/Stats";
@@ -6,31 +5,18 @@ import Story from "@/components/Hero/ChefStory";
 import Contact from "@/components/Hero/Contacts";
 import CTA from "@/components/Hero/CTA";
 
-const Home = () => {
-  console.log("ORD".padEnd(3, "0") + String(100));
+// Note: Ensure your global.css has @tailwind directives
+// and you have installed: npm install lucide-react
+
+export default function Home() {
   return (
-    <div className="relative min-h-screen">
-      <Aurora />
-
-      {/* Hero Section */}
+    <main className="bg-stone-950 min-h-screen selection:bg-amber-500/30 selection:text-amber-100">
       <Hero />
-
-      {/* Quick Features */}
-      <Features />
-
-      {/* Restaurant Stats */}
       <Stats />
-
-      {/* Chef's Story Preview */}
       <Story />
-
-      {/* Quick Contact Info */}
+      <Features />
       <Contact />
-
-      {/* Call to Action */}
       <CTA />
-    </div>
+    </main>
   );
-};
-
-export default Home;
+}
