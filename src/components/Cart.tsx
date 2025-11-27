@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { Playfair_Display, Manrope } from "next/font/google";
+import LoaderLink from "./LoaderLink";
 
 // --- FONTS ---
 const playfair = Playfair_Display({ subsets: ["latin"] });
@@ -105,12 +106,13 @@ const Cart: React.FC = () => {
                     Looks like you haven&apos;t added anything yet.
                   </p>
                 </div>
-                <button
+                <LoaderLink
+                  href="/menu"
                   onClick={() => setIsCartOpen(false)}
                   className={`${manrope.className} text-amber-500 text-xs font-bold uppercase tracking-widest border-b border-amber-500/30 hover:border-amber-500 pb-1 transition-all`}
                 >
                   Browse Menu
-                </button>
+                </LoaderLink>
               </div>
             ) : (
               <div className="space-y-6">

@@ -82,22 +82,24 @@ select {
   cursor: none !important;
 }
 
-/* Custom scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px; /* For horizontal scrolling */
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: #0c0a09; /* Matches bg-stone-950 (Seamless look) */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d97706;
-  border-radius: 4px;
+  background: #292524; /* Stone-800: Subtle & Minimal by default */
+  border-radius: 99px; /* Pill shape */
+  border: 1px solid #0c0a09; /* Adds a tiny breathing room */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #f59e0b;
+  background: #d97706; /* Amber-600: Turns Gold on hover */
 }
 
 /* Loading animation for form submission */

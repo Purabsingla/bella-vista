@@ -14,10 +14,16 @@ import {
   Menu,
   X,
   Utensils,
+  ChevronRight,
 } from "lucide-react";
+import { Playfair_Display, Manrope } from "next/font/google";
+
+// --- FONTS ---
+const playfair = Playfair_Display({ subsets: ["latin"] });
+const manrope = Manrope({ subsets: ["latin"] });
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Default open on desktop
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const pathName = usePathname();
 
@@ -30,126 +36,179 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   const isActive = (path: string) => {
-    if (path === "/admin") {
-      return pathName === "/admin";
-    }
+    if (path === "/admin") return pathName === "/admin";
     return pathName.startsWith(path);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 transform transition-transform duration-300 ease-in-out ${
+    <div
+      className={`min-h-screen bg-stone-950 text-stone-200 ${manrope.className} flex`}
+    >
+      {/* --- SIDEBAR --- */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-stone-900 border-r border-stone-800 transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
+        } lg:translate-x-0 lg:static flex flex-col`}
       >
-        <div className="flex items-center justify-between h-16 px-6 bg-gray-800">
+        {/* Logo Area */}
+        <div className="h-20 flex items-center px-8 border-b border-stone-800 bg-stone-950/50">
           <div className="flex items-center gap-3">
-            <Utensils className="w-8 h-8 text-amber-400" />
-            <span className="text-xl font-bold text-white">Bella Vista</span>
+            <div className="w-8 h-8 rounded-full bg-amber-600/10 flex items-center justify-center border border-amber-600/20">
+              <Utensils className="w-4 h-4 text-amber-500" />
+            </div>
+            <span
+              className={`${playfair.className} text-xl font-bold text-white tracking-wide`}
+            >
+              Bella Vista
+            </span>
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-white"
+            className="lg:hidden ml-auto text-stone-500 hover:text-white"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <nav className="mt-8 px-4">
-          <div className="space-y-2">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive(item.path)
-                      ? "bg-amber-600 text-white"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
+          <p className="px-4 text-[10px] uppercase tracking-widest text-stone-500 font-bold mb-4">
+            Management
+          </p>
+          {sidebarItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.path);
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                onClick={() => setIsSidebarOpen(false)} // Close on mobile click
+                className={`group flex items-center justify-between px-4 py-3 rounded-sm transition-all duration-200 ${
+                  active
+                    ? "bg-amber-950/20 text-amber-500 border-l-2 border-amber-500"
+                    : "text-stone-400 hover:bg-stone-800 hover:text-white border-l-2 border-transparent"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon
+                    className={`w-5 h-5 ${
+                      active
+                        ? "text-amber-500"
+                        : "text-stone-500 group-hover:text-white"
+                    }`}
+                  />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </div>
+                {active && <ChevronRight className="w-4 h-4 opacity-50" />}
+              </Link>
+            );
+          })}
         </nav>
-      </div>
 
-      {/* Main Content */}
-      <div
-        className={`transition-all duration-300 ${
-          isSidebarOpen ? "lg:ml-64" : ""
-        }`}
-      >
-        {/* Top Bar */}
-        <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6">
+        {/* User Profile Snippet (Bottom Sidebar) */}
+        <div className="p-4 border-t border-stone-800 bg-stone-950/30">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-white font-bold shadow-lg">
+              M
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-bold text-white truncate">
+                Marco Bellacorte
+              </p>
+              <p className="text-xs text-stone-500 truncate">Head Admin</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* --- MAIN CONTENT WRAPPER --- */}
+      <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+        {/* Top Header */}
+        <header className="h-20 bg-stone-950/80 backdrop-blur-md border-b border-stone-800 sticky top-0 z-40 px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-gray-600 hover:text-gray-900 lg:hidden"
+              className="lg:hidden p-2 text-stone-400 hover:text-white hover:bg-stone-800 rounded-md transition-colors"
             >
               <Menu className="w-6 h-6" />
             </button>
+            {/* Breadcrumb or Page Title Placeholder */}
+            <h2
+              className={`${playfair.className} text-xl text-white hidden md:block`}
+            >
+              Dashboard Overview
+            </h2>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Profile Dropdown */}
+          <div className="flex items-center gap-6">
+            {/* Admin Profile Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 hover:bg-stone-900 px-3 py-2 rounded-sm transition-colors border border-transparent hover:border-stone-800"
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white font-semibold">
-                  M
+                <div className="w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center text-stone-400">
+                  <User className="w-4 h-4" />
                 </div>
-                <div className="hidden md:block text-left">
-                  <div className="text-sm font-medium text-gray-900">
-                    Marco Bellacorte
-                  </div>
-                  <div className="text-xs text-gray-500">Admin</div>
-                </div>
+                <span className="text-sm font-medium text-stone-300 hidden md:block">
+                  Account
+                </span>
               </button>
 
+              {/* Dropdown Menu */}
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                  <Link
-                    href="/admin/profile"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4" />
-                    Profile
-                  </Link>
-                  <Link
-                    href="/admin/settings"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Settings
-                  </Link>
-                  <hr className="my-2" />
-                  <button className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left">
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </button>
-                </div>
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsProfileOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-56 bg-stone-900 border border-stone-800 rounded-sm shadow-2xl z-50 py-1 origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                    <div className="px-4 py-3 border-b border-stone-800">
+                      <p className="text-sm font-bold text-white">
+                        Marco Bellacorte
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        admin@bellavista.com
+                      </p>
+                    </div>
+                    <Link
+                      href="/admin/profile"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-stone-400 hover:text-white hover:bg-stone-800 transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile
+                    </Link>
+                    <Link
+                      href="/admin/settings"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-stone-400 hover:text-white hover:bg-stone-800 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </Link>
+                    <div className="border-t border-stone-800 my-1"></div>
+                    <button className="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-950/10 hover:text-red-400 transition-colors text-left">
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="min-h-screen">{children}</main>
+        {/* Page Content Rendered Here */}
+        <main className="flex-1 overflow-y-auto bg-stone-950 p-6 lg:p-10 relative">
+          {/* Optional: Faint background grain for texture */}
+          <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover mix-blend-overlay" />
+          <div className="relative z-10">{children}</div>
+        </main>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Sidebar Overlay Backdrop */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
