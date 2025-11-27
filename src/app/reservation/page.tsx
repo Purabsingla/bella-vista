@@ -3,11 +3,27 @@
 import React, { useState } from "react";
 import SplitText from "@/components/SplitText/SplitText";
 import FadeContent from "@/components/FadeContent";
-import { Calendar, Clock, Users, Phone, Mail, CheckCircle } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Users,
+  Phone,
+  Mail,
+  CheckCircle,
+  Info,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { auth } from "@/firebase/firebase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Great_Vibes, Playfair_Display, Manrope } from "next/font/google";
 
+// --- FONTS ---
+const greatVibes = Great_Vibes({ weight: "400", subsets: ["latin"] });
+const playfair = Playfair_Display({ subsets: ["latin"] });
+const manrope = Manrope({ subsets: ["latin"] });
+
+// --- CONSTANTS ---
 const timeSlots = [
   "5:00 PM",
   "5:30 PM",
@@ -31,7 +47,7 @@ const partySizes = [
   { value: "6", label: "6 Guests" },
   { value: "7", label: "7 Guests" },
   { value: "8", label: "8 Guests" },
-  { value: "9+", label: "9+ Guests (Call us)" },
+  { value: "9+", label: "9+ Guests (Please Call)" },
 ];
 
 type Reservation = {
@@ -55,94 +71,130 @@ const Reservation: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
   const router = useRouter();
 
   const onSubmit = async (Data: Reservation) => {
-    //Checking if user is authenticated
+    // Authentication Check
     if (!auth.currentUser) {
-      router.replace("/auth?from=/reservations");
+      router.push("/auth?from=/reservation");
       return;
     }
 
     setIsSubmitting(true);
-    console.log(Data);
 
-    // Simulate reservation submission
-    const response = await fetch("/api/reservations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: auth.currentUser?.uid, //persons Uid
-        ...Data,
-      }),
-    });
-    const result = await response.json();
-    console.log("Reservation response:", result);
-    await new Promise((resolve) => setTimeout(resolve, 2500));
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: auth.currentUser?.uid,
+          ...Data,
+        }),
+      });
 
-    if (response.status === 200) {
+      // Simulate network delay for UX
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (response.ok) {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+      } else {
+        setIsSubmitting(false);
+        alert("Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
       setIsSubmitting(false);
-      setIsSubmitted(true);
     }
   };
 
+  // --- SUCCESS VIEW (The "Ticket" Look) ---
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-stone-950 pt-20 flex items-center justify-center px-4 relative overflow-hidden">
+        {/* Background Texture */}
+        <div className="fixed inset-0 pointer-events-none opacity-[0.05] z-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover" />
+
         <FadeContent>
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-12 text-center max-w-2xl mx-auto">
-            <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-12 h-12 text-white" />
+          <div className="relative z-10 bg-stone-900 border border-stone-800 p-12 max-w-xl mx-auto text-center shadow-2xl rounded-sm">
+            {/* Gold Border Effect */}
+            <div className="absolute inset-1 border border-stone-800 pointer-events-none" />
+
+            <div className="w-20 h-20 bg-emerald-900/30 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-8">
+              <CheckCircle className="w-10 h-10 text-emerald-500" />
             </div>
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Reservation Confirmed!
+
+            <h2 className={`${playfair.className} text-4xl text-white mb-4`}>
+              Reservation Confirmed
             </h2>
-            <p className="text-xl text-gray-300 mb-6">
-              Thank you, {watch("name")}! Your table for {watch("guests")}{" "}
-              {parseInt(watch("guests")) === 1 ? "guest" : "guests"} on{" "}
-              {new Date(watch("date")).toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}{" "}
-              at {watch("time")} has been confirmed.
+            <p
+              className={`${manrope.className} text-stone-400 mb-10 font-light`}
+            >
+              We look forward to welcoming you,{" "}
+              <span className="text-white font-bold">{watch("name")}</span>.
             </p>
-            <div className="bg-amber-600/20 border border-amber-600/50 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-amber-400 mb-2">
-                Reservation Details
-              </h3>
-              <div className="text-gray-300 space-y-2">
-                <p>
-                  <strong>Name:</strong> {watch("name")}
-                </p>
-                <p>
-                  <strong>Date:</strong>{" "}
-                  {new Date(watch("date")).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Time:</strong> {watch("time")}
-                </p>
-                <p>
-                  <strong>Party Size:</strong> {watch("guests")}{" "}
-                  {parseInt(watch("guests")) === 1 ? "guest" : "guests"}
-                </p>
-                <p>
-                  <strong>Contact:</strong> {watch("email")}
-                </p>
+
+            {/* Ticket Details */}
+            <div className="bg-stone-950 border border-stone-800 p-8 mb-8 text-left relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-amber-500" />
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p
+                    className={`${manrope.className} text-[10px] uppercase tracking-widest text-stone-500 font-bold mb-1`}
+                  >
+                    Date
+                  </p>
+                  <p className={`${playfair.className} text-xl text-white`}>
+                    {new Date(watch("date")).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+                <div>
+                  <p
+                    className={`${manrope.className} text-[10px] uppercase tracking-widest text-stone-500 font-bold mb-1`}
+                  >
+                    Time
+                  </p>
+                  <p className={`${playfair.className} text-xl text-white`}>
+                    {watch("time")}
+                  </p>
+                </div>
+                <div>
+                  <p
+                    className={`${manrope.className} text-[10px] uppercase tracking-widest text-stone-500 font-bold mb-1`}
+                  >
+                    Guests
+                  </p>
+                  <p className={`${playfair.className} text-xl text-white`}>
+                    {partySizes.find((p) => p.value === watch("guests"))
+                      ?.label || watch("guests")}
+                  </p>
+                </div>
+                <div>
+                  <p
+                    className={`${manrope.className} text-[10px] uppercase tracking-widest text-stone-500 font-bold mb-1`}
+                  >
+                    Reference
+                  </p>
+                  <p className={`${playfair.className} text-xl text-amber-500`}>
+                    #{Math.floor(Math.random() * 10000)}
+                  </p>
+                </div>
               </div>
             </div>
-            <p className="text-gray-400 mb-6">
-              A confirmation email has been sent to {watch("email")}. If you
-              need to make any changes, please call us at (555) 123-4567.
+
+            <p className="text-stone-500 text-xs mb-8">
+              A confirmation email has been sent to {watch("email")}.
             </p>
+
             <button
               onClick={() => {
                 setIsSubmitted(false);
                 reset();
               }}
-              className="interactive bg-gradient-to-r from-amber-600 to-amber-500 text-white px-8 py-3 rounded-full font-semibold hover:from-amber-500 hover:to-amber-400 transition-all duration-300 transform hover:scale-105"
+              className="uppercase tracking-widest text-xs font-bold text-amber-500 hover:text-white transition-colors border-b border-amber-500/30 hover:border-white pb-1"
             >
               Make Another Reservation
             </button>
@@ -152,295 +204,260 @@ const Reservation: React.FC = () => {
     );
   }
 
+  // --- MAIN RESERVATION FORM ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16 relative overflow-hidden">
-      {/* Elegant Background Animation */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-teal-900/20 to-cyan-900/20" />
-        <div className="absolute top-1/4 left-1/3 w-80 h-80 bg-gradient-to-r from-emerald-400/25 to-teal-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-cyan-400/25 to-blue-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-2000" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-teal-400/25 to-emerald-400/25 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-4000" />
-      </div>
+    <div className="min-h-screen bg-stone-950 pt-16 relative overflow-hidden">
+      {/* 1. Subtle Background Texture */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.05] z-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover" />
 
-      {/* Dotted Pattern Overlay */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
-      {/* Hero Section */}
-      <section className="py-20 px-4 text-center">
-        <SplitText
-          text="Make a Reservation"
-          className="text-4xl md:text-5xl font-bold text-white mb-12 text-center"
-          delay={100}
-          duration={0.6}
-          ease="power3.out"
-          splitType="chars"
-          from={{ opacity: 0, y: 40 }}
-          to={{ opacity: 1, y: 0 }}
-          threshold={0}
-          rootMargin="0px 0px -20px 0px" // trigger ~50px before fully entering
-        />
-        <FadeContent delay={500}>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Reserve your table at Bella Vista and experience an unforgettable
-            dining journey
+      {/* --- HERO --- */}
+      <section className="relative py-24 px-4 text-center z-10">
+        <FadeContent>
+          <div className="flex justify-center items-center gap-4 mb-4">
+            <div className="h-[1px] w-12 bg-amber-500/50" />
+            <span
+              className={`${manrope.className} text-amber-500 tracking-[0.3em] text-xs uppercase font-bold`}
+            >
+              Book A Table
+            </span>
+            <div className="h-[1px] w-12 bg-amber-500/50" />
+          </div>
+          <h1
+            className={`${greatVibes.className} text-7xl md:text-9xl text-white mb-6 drop-shadow-2xl`}
+          >
+            Reservations
+          </h1>
+          <p
+            className={`${playfair.className} text-2xl md:text-3xl text-stone-300 max-w-2xl mx-auto italic font-light tracking-wide`}
+          >
+            &quot;Secure your spot for an unforgettable evening.&quot;
           </p>
         </FadeContent>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 pb-20">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Reservation Info */}
-          <div className="lg:col-span-1">
+      <div className="max-w-6xl mx-auto px-4 pb-24 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-12">
+          {/* --- LEFT COLUMN: Info (4 Cols) --- */}
+          <div className="lg:col-span-4 space-y-8">
             <FadeContent direction="left">
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 space-y-6">
-                <h3 className="text-2xl font-bold text-white mb-4">
-                  Reservation Info
+              <div className="bg-stone-900/30 backdrop-blur-sm border border-stone-800 p-8 rounded-sm">
+                <h3
+                  className={`${playfair.className} text-2xl text-white mb-6`}
+                >
+                  Dining Information
                 </h3>
 
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-amber-400" />
-                    <div>
-                      <p className="text-white font-medium">Available Days</p>
-                      <p className="text-gray-300 text-sm">Tuesday - Sunday</p>
+                <div className="space-y-6">
+                  <div className="group">
+                    <div className="flex items-center gap-3 mb-1 text-amber-500">
+                      <Clock className="w-4 h-4" />
+                      <span
+                        className={`${manrope.className} text-xs font-bold uppercase tracking-widest`}
+                      >
+                        Dinner Service
+                      </span>
                     </div>
+                    <p className="text-stone-400 text-sm pl-7">
+                      Tue - Sun: 5:00 PM - 10:00 PM
+                    </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-amber-400" />
-                    <div>
-                      <p className="text-white font-medium">Dinner Hours</p>
-                      <p className="text-gray-300 text-sm">
-                        5:00 PM - 10:00 PM
-                      </p>
+                  <div className="group">
+                    <div className="flex items-center gap-3 mb-1 text-amber-500">
+                      <Users className="w-4 h-4" />
+                      <span
+                        className={`${manrope.className} text-xs font-bold uppercase tracking-widest`}
+                      >
+                        Large Parties
+                      </span>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-amber-400" />
-                    <div>
-                      <p className="text-white font-medium">Party Size</p>
-                      <p className="text-gray-300 text-sm">
-                        Up to 8 guests online
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t border-white/20 pt-4">
-                  <h4 className="text-white font-semibold mb-2">Need Help?</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-amber-400" />
+                    <p className="text-stone-400 text-sm pl-7 leading-relaxed">
+                      For parties of 9 or more, please contact us directly at{" "}
                       <a
                         href="tel:+15551234567"
-                        className="text-gray-300 hover:text-amber-400 transition-colors text-sm"
+                        className="text-white hover:text-amber-500 transition-colors"
                       >
                         (555) 123-4567
                       </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-amber-400" />
-                      <a
-                        href="mailto:reservations@bellavista.com"
-                        className="text-gray-300 hover:text-amber-400 transition-colors text-sm"
-                      >
-                        reservations@bellavista.com
-                      </a>
-                    </div>
+                      .
+                    </p>
                   </div>
-                </div>
 
-                <div className="bg-amber-600/20 border border-amber-600/50 rounded-lg p-4">
-                  <p className="text-amber-300 text-sm">
-                    <strong>Note:</strong> For parties of 9 or more, please call
-                    us directly. Reservations are held for 15 minutes past the
-                    reserved time.
-                  </p>
+                  <div className="group">
+                    <div className="flex items-center gap-3 mb-1 text-amber-500">
+                      <Info className="w-4 h-4" />
+                      <span
+                        className={`${manrope.className} text-xs font-bold uppercase tracking-widest`}
+                      >
+                        Policy
+                      </span>
+                    </div>
+                    <p className="text-stone-400 text-sm pl-7 leading-relaxed">
+                      Reservations are held for 15 minutes. Please notify us if
+                      you are running late.
+                    </p>
+                  </div>
                 </div>
               </div>
             </FadeContent>
           </div>
 
-          {/* Reservation Form */}
-          <div className="lg:col-span-2">
+          {/* --- RIGHT COLUMN: Form (8 Cols) --- */}
+          <div className="lg:col-span-8">
             <FadeContent direction="right">
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8">
-                <h3 className="text-3xl font-bold text-white mb-8">
-                  Reserve Your Table
-                </h3>
-
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Personal Information */}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
+              <div className="bg-stone-900 border border-stone-800 p-8 md:p-12 rounded-sm shadow-2xl">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                  {/* Row 1: Personal Info */}
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="group">
                       <label
                         htmlFor="name"
-                        className="block text-white font-medium mb-2"
+                        className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                       >
-                        Full Name *
+                        Full Name
                       </label>
                       <input
                         {...register("name", { required: true })}
-                        id="name"
-                        className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
-                        placeholder="Your full name"
+                        type="text"
+                        placeholder="John Doe"
+                        className="w-full bg-stone-950 border-b border-stone-800 text-white px-0 py-3 focus:outline-none focus:border-amber-500 focus:bg-stone-900/30 transition-all placeholder-stone-700"
                       />
                     </div>
-
-                    <div>
+                    <div className="group">
                       <label
-                        htmlFor="email"
-                        className="block text-white font-medium mb-2"
+                        htmlFor="phone"
+                        className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                       >
-                        Email Address *
+                        Phone Number
                       </label>
                       <input
-                        {...register("email", { required: true })}
-                        id="email"
-                        className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
-                        placeholder="your@email.com"
+                        {...register("phone", { required: true })}
+                        type="tel"
+                        placeholder="(555) 000-0000"
+                        className="w-full bg-stone-950 border-b border-stone-800 text-white px-0 py-3 focus:outline-none focus:border-amber-500 focus:bg-stone-900/30 transition-all placeholder-stone-700"
                       />
                     </div>
                   </div>
 
-                  <div>
+                  {/* Row 2: Email */}
+                  <div className="group">
                     <label
-                      htmlFor="phone"
-                      className="block text-white font-medium mb-2"
+                      htmlFor="email"
+                      className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                     >
-                      Phone Number *
+                      Email Address
                     </label>
                     <input
-                      {...register("phone", { required: true })}
-                      id="phone"
-                      className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
-                      placeholder="(555) 123-4567"
+                      {...register("email", { required: true })}
+                      type="email"
+                      placeholder="john@example.com"
+                      className="w-full bg-stone-950 border-b border-stone-800 text-white px-0 py-3 focus:outline-none focus:border-amber-500 focus:bg-stone-900/30 transition-all placeholder-stone-700"
                     />
                   </div>
 
-                  {/* Reservation Details */}
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div>
+                  {/* Row 3: Reservation Details */}
+                  <div className="grid md:grid-cols-3 gap-8">
+                    <div className="group">
                       <label
                         htmlFor="date"
-                        className="block text-white font-medium mb-2"
+                        className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                       >
-                        Date *
+                        Date
                       </label>
                       <input
-                        type="date"
-                        id="date"
                         {...register("date", { required: true })}
+                        type="date"
                         min={today}
-                        className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
+                        className="w-full bg-stone-950 border-b border-stone-800 text-white px-0 py-3 focus:outline-none focus:border-amber-500 focus:bg-stone-900/30 transition-all [color-scheme:dark]"
                       />
                     </div>
 
-                    <div>
+                    <div className="group">
                       <label
                         htmlFor="time"
-                        className="block text-white font-medium mb-2"
+                        className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                       >
-                        Time *
+                        Time
                       </label>
                       <select
-                        id="time"
                         {...register("time", { required: true })}
-                        className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
+                        className="w-full bg-stone-950 border-b border-stone-800 text-white px-0 py-3 focus:outline-none focus:border-amber-500 focus:bg-stone-900/30 transition-all appearance-none rounded-none"
                       >
-                        <option value="" className="bg-gray-800">
-                          Select time
+                        <option value="" className="text-stone-500">
+                          Select Time
                         </option>
-                        {timeSlots.map((time) => (
-                          <option
-                            key={time}
-                            value={time}
-                            className="bg-gray-800"
-                          >
-                            {time}
+                        {timeSlots.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
                           </option>
                         ))}
                       </select>
                     </div>
 
-                    <div>
+                    <div className="group">
                       <label
                         htmlFor="guests"
-                        className="block text-white font-medium mb-2"
+                        className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                       >
-                        Party Size *
+                        Guests
                       </label>
                       <select
-                        id="guests"
                         {...register("guests", { required: true })}
-                        className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300"
+                        className="w-full bg-stone-950 border-b border-stone-800 text-white px-0 py-3 focus:outline-none focus:border-amber-500 focus:bg-stone-900/30 transition-all appearance-none rounded-none"
                       >
-                        <option value="" className="bg-gray-800">
-                          Select guests
+                        <option value="" className="text-stone-500">
+                          Party Size
                         </option>
-                        {partySizes.map((size) => (
-                          <option
-                            key={size.value}
-                            value={size.value}
-                            className="bg-gray-800"
-                          >
-                            {size.label}
+                        {partySizes.map((s) => (
+                          <option key={s.value} value={s.value}>
+                            {s.label}
                           </option>
                         ))}
                       </select>
                     </div>
                   </div>
 
-                  <div>
+                  {/* Row 4: Special Requests */}
+                  <div className="group">
                     <label
-                      htmlFor="specialRequests"
-                      className="block text-white font-medium mb-2"
+                      htmlFor="requests"
+                      className={`${manrope.className} block text-stone-500 text-xs uppercase tracking-widest font-bold mb-2 group-focus-within:text-amber-500 transition-colors`}
                     >
                       Special Requests
                     </label>
                     <textarea
-                      id="specialRequests"
                       {...register("specialRequests")}
-                      rows={4}
-                      className="interactive w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-300 resize-none"
-                      placeholder="Any dietary restrictions, special occasions, or seating preferences..."
+                      rows={3}
+                      placeholder="Allergies, special occasions, or seating preferences..."
+                      className="w-full bg-stone-950 border-b border-stone-800 text-white px-0 py-3 focus:outline-none focus:border-amber-500 focus:bg-stone-900/30 transition-all placeholder-stone-700 resize-none"
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="interactive w-full bg-gradient-to-r from-amber-600 to-amber-500 text-white py-4 rounded-lg font-semibold text-lg hover:from-amber-500 hover:to-amber-400 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                  >
-                    {auth.currentUser ? (
-                      "Login to Register table"
-                    ) : isSubmitting ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Confirming Reservation...
-                      </>
+                  {/* Action Button */}
+                  <div className="pt-4">
+                    {!auth.currentUser ? (
+                      <Link
+                        href="/auth?from=/reservation"
+                        className="block w-full"
+                      >
+                        <button
+                          type="button"
+                          className="w-full py-4 bg-stone-800 text-stone-300 border border-stone-700 hover:bg-white hover:text-black transition-all duration-300 font-bold uppercase tracking-widest text-xs rounded-sm"
+                        >
+                          Login to Reserve
+                        </button>
+                      </Link>
                     ) : (
-                      <>
-                        <Calendar className="w-5 h-5" />
-                        Confirm Reservation
-                      </>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-4 bg-amber-600 text-white hover:bg-amber-500 transition-all duration-300 font-bold uppercase tracking-widest text-xs rounded-sm shadow-lg hover:shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {isSubmitting ? "Processing..." : "Confirm Reservation"}
+                      </button>
                     )}
-                  </button>
+                  </div>
                 </form>
-
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <p className="text-gray-400 text-sm text-center">
-                    By making a reservation, you agree to our cancellation
-                    policy. Please cancel at least 2 hours in advance.
-                  </p>
-                </div>
               </div>
             </FadeContent>
           </div>
